@@ -165,6 +165,15 @@ KEYBITS = 256
 ALLOWED_VERSIONS = ['v1', 'v2']
 DEFAULT_VERSION = 'v1'
 
+#AUTH OUTLOOK
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp-mail.outlook.com'
+EMAIL_HOST_USER = "decidepartalberti2@outlook.com"
+EMAIL_HOST_PASSWORD = "decidepass123"
+
+
 try:
     from local_settings import *
 except ImportError:

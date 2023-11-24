@@ -2,6 +2,9 @@ from django.contrib.auth.backends import ModelBackend
 
 from base import mods
 
+from django.core.mail import send_mail
+from django.conf import settings
+
 
 class AuthBackend(ModelBackend):
     '''
@@ -25,5 +28,17 @@ class AuthBackend(ModelBackend):
             }
             token = mods.post('authentication', entry_point='/login/', json=data)
             request.session['auth-token'] = token['token']
+
+            # Enviar correo electrónico al usuario autenticado
+            subject = 'Inicio de sesión exitoso'
+            message = 'Se ha iniciado sesión correctamente en la plataforma.'
+            recipients = [u.email]  # Asumiendo que el modelo de usuario tiene un campo 'email'
+
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=recipients
+            )
 
         return u

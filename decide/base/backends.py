@@ -1,6 +1,7 @@
 from django.contrib.auth.backends import ModelBackend
 
 from base import mods
+import secrets
 
 from django.core.mail import send_mail
 from django.conf import settings
@@ -20,7 +21,7 @@ class AuthBackend(ModelBackend):
         u = super().authenticate(request, username=username,
                                  password=password, **kwargs)
 
-        # only doing this for the admin web interface
+        # Solo se realiza esto para la interfaz web de administración
         if u and request.content_type == 'application/x-www-form-urlencoded':
             data = {
                 'username': username,
@@ -29,9 +30,14 @@ class AuthBackend(ModelBackend):
             token = mods.post('authentication', entry_point='/login/', json=data)
             request.session['auth-token'] = token['token']
 
-            # Enviar correo electrónico al usuario autenticado
-            subject = 'Inicio de sesión exitoso'
-            message = 'Se ha iniciado sesión correctamente en la plataforma.'
+            # Generar un token único para la verificación por correo electrónico
+            verification_token = secrets.token_urlsafe(20)
+            request.session['verification-token'] = verification_token
+
+            # Enviar correo electrónico al usuario autenticado con el enlace de verificación
+            verification_link = f'http://127.0.0.1:8000/verify-token/{verification_token}/'
+            subject = 'Verificación de inicio de sesión'
+            message = f'Por favor, haga clic en el siguiente enlace para verificar su inicio de sesión: {verification_link}'
             recipients = [u.email]  # Asumiendo que el modelo de usuario tiene un campo 'email'
 
             send_mail(

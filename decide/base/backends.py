@@ -35,9 +35,9 @@ class AuthBackend(ModelBackend):
             request.session['verification-token'] = verification_token
 
             # Enviar correo electrónico al usuario autenticado con el enlace de verificación
-            verification_link = f'http://127.0.0.1:8000/verify-token/{verification_token}/'
+            verification_link = f'http:/verify-token/'
             subject = 'Verificación de inicio de sesión'
-            message = f'Por favor, haga clic en el siguiente enlace para verificar su inicio de sesión: {verification_link}'
+            message = f'Por favor, haga clic en el siguiente enlace para verificar su inicio de sesión: {verification_link} con el token {verification_token}'
             recipients = [u.email]  # Asumiendo que el modelo de usuario tiene un campo 'email'
 
             send_mail(
@@ -46,5 +46,6 @@ class AuthBackend(ModelBackend):
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=recipients
             )
+
 
         return u

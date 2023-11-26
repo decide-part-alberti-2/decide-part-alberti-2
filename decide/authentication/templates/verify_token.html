@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ingrese su token</title>
+</head>
+<body>
+    <h1>Ingrese su token</h1>
+    <form action="{% url 'verify_token' %}" method="post">
+        {% csrf_token %}
+        <input type="text" name="token" placeholder="Ingrese su token" required>
+        <button type="submit">Validar</button>
+    </form>
+</body>
+</html>

@@ -59,6 +59,9 @@ class LoginView(APIView):
         username = request.data.get('username', '')
         password = request.data.get('password', '')
 
+        #if request.method =='POST':                
+            #token_ingresado = request.Post.get('token')       #Hay que poner en la clase User la entrada: token=models.CharField(max_length=100, blank=True, null=True)
+
         if not username or not password:
             return Response({}, status=HTTP_400_BAD_REQUEST)
 
@@ -76,9 +79,9 @@ class LoginView(APIView):
         user.save()
 
         # Enviar correo electrónico al usuario para la verificación
-        verification_link = f'http://127.0.0.1:8000/verify-token/{verification_token}/'  # URL de verificación
+        verification_link = f'http://127.0.0.1:8000/verify-token/'  # URL de verificación
         subject = 'Verificación de inicio de sesión'
-        message = f'Por favor, haga clic en el siguiente enlace para verificar su inicio de sesión: {verification_link}'
+        message = f'Por favor, haga clic en el siguiente enlace para verificar su inicio de sesión: {verification_link} con el token {verification_token}'
         recipients = [user.email]  # Asegúrate de tener un campo de email en tu modelo de usuario
 
         send_mail(
@@ -87,5 +90,11 @@ class LoginView(APIView):
             from_email=settings.EMAIL_HOST_USER,
             recipient_list=recipients
         )
+
+        if token_ingresado == user.verification_token:
+            return redirect("http://127.0.0.1:8000/login") 
+
+        if verification_token =! user.verification_token:
+            return Response({}, status=HTTP_401_UNAUTHORIZED)
 
         return Response({'message': 'Se ha enviado un enlace de verificación al correo electrónico registrado.'}, HTTP_200_OK)

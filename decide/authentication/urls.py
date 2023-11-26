@@ -4,7 +4,8 @@ from rest_framework.authtoken.views import obtain_auth_token
 from .views import GetUserView, LogoutView, RegisterView, LoginView
 
 urlpatterns = [
-    path('verify-token/<str:verification_token>/', LoginView.as_view(), name='verificar_inicio_sesion'),
+   # path('verify-token/<str:verification_token>/', LoginView.as_view(), name='verificar_inicio_sesion'),
+    path('verify-token/', LoginView.as_view(), name='verify_token'),
     path('login/', obtain_auth_token),
     path('logout/', LogoutView.as_view()),
     path('getuser/', GetUserView.as_view()),

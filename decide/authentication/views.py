@@ -8,11 +8,14 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.core.exceptions import ObjectDoesNotExist
-
-from .serializers import UserSerializer
-
+from django.views.generic import CreateView
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import authenticate, login
+from django.http import HttpResponse
+import re
+from django.template.loader import get_template
 
 class GetUserView(APIView):
     def post(self, request):
@@ -33,68 +36,109 @@ class LogoutView(APIView):
         return Response({})
 
 
-class RegisterView(APIView):
-    def post(self, request):
-        key = request.data.get('token', '')
-        tk = get_object_or_404(Token, key=key)
-        if not tk.user.is_superuser:
-            return Response({}, status=HTTP_401_UNAUTHORIZED)
+class RegisterView(CreateView):
+    template_name = "register.html"
+    form_class = UserCreationForm  # Usamos el formulario de creación de usuario predeterminado
+    success_url = '/'  # URL a la que redirigir después de un registro exitoso
+    model = User
 
-        username = request.data.get('username', '')
-        pwd = request.data.get('password', '')
-        if not username or not pwd:
-            return Response({}, status=HTTP_400_BAD_REQUEST)
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
-        try:
-            user = User(username=username)
-            user.set_password(pwd)
-            user.save()
-            token, _ = Token.objects.get_or_create(user=user)
-        except IntegrityError:
-            return Response({}, status=HTTP_400_BAD_REQUEST)
-        return Response({'user_pk': user.pk, 'token': token.key}, HTTP_201_CREATED)
+    def form_valid(self, form):
+        self.object = form.save()
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password1')
+        user = authenticate(username=username, password=password)
+        login(self.request, user)
+        return super().form_valid(form)
 
-class LoginView(APIView):
-    def post(self, request):
-        username = request.data.get('username', '')
-        password = request.data.get('password', '')
+    def form_invalid(self, form):
+        return HttpResponse("Error en el registro. Por favor, verifica los datos proporcionados.", status=HTTP_400_BAD_REQUEST)
 
-        #if request.method =='POST':                
-            #token_ingresado = request.Post.get('token')       #Hay que poner en la clase User la entrada: token=models.CharField(max_length=100, blank=True, null=True)
 
-        if not username or not password:
-            return Response({}, status=HTTP_400_BAD_REQUEST)
-
-        user = User.objects.filter(username=username).first()
-
-        if user is None or not user.check_password(password):
-            return Response({}, status=HTTP_401_UNAUTHORIZED)
-
-        if not user.is_active:
-            return Response({}, status=HTTP_401_UNAUTHORIZED)
-
-        # Generar un token para la verificación por correo electrónico
-        verification_token = secrets.token_urlsafe(20)
-        user.verification_token = verification_token
-        user.save()
-
-        # Enviar correo electrónico al usuario para la verificación
-        verification_link = f'http://127.0.0.1:8000/verify-token/'  # URL de verificación
-        subject = 'Verificación de inicio de sesión'
-        message = f'Por favor, haga clic en el siguiente enlace para verificar su inicio de sesión: {verification_link} con el token {verification_token}'
-        recipients = [user.email]  # Asegúrate de tener un campo de email en tu modelo de usuario
-
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=recipients
+class CustomUserCreationForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = (
+            'username',
+            'password1',
+            'password2',
+            'email',
+            'first_name',
+            'last_name'
         )
+        labels = {
+            'username': 'Nombre de usuario',
+            'password1': 'Contraseña',
+            'password2': 'Repetir contraseña',
+            'email': 'Correo electrónico',
+            'first_name': 'Nombre',
+            'last_name': 'Apellido'
+        }
 
-        if token_ingresado == user.verification_token:
-            return redirect("http://127.0.0.1:8000/login") 
+    def clean_username(self, username):
+        username = username.lower()
+        new = User.objects.filter(username=username)
+        if new.exists():
+            return True
+        if len(username) > 150:
+            return True
 
-        if verification_token =! user.verification_token:
-            return Response({}, status=HTTP_401_UNAUTHORIZED)
+        username_val_regex = re.search("[^\w@.\-_+]", username)
+        if username_val_regex is not None:
+            return True
+        return False
 
-        return Response({'message': 'Se ha enviado un enlace de verificación al correo electrónico registrado.'}, HTTP_200_OK)
+    def clean_email(self, email):
+        email = email.lower()
+        new = User.objects.filter(email=email)
+        if new.exists():
+            return True
+        return False
+
+    def clean_password2(self, password1, password2):
+        if password1 and password2 and password1 != password2:
+            return True
+        return False
+
+
+class LoginView(CreateView):
+    template_name = "login.html"
+    form_class = CustomUserCreationForm
+    model = User
+
+    def post(self, request):
+        values = request.POST
+        username = values['username']
+        pass1 = values['password1']
+
+        user = authenticate(request, username=username, password=pass1)
+        if user is not None:
+            login(request, user)
+            print("Autenticado correctamente")
+        else:
+            print("Usuario no autenticado")
+            return HttpResponse("El nombre de usuario y la contraseña no coinciden", status=HTTP_400_BAD_REQUEST)
+
+        return redirect("/")
+
+    def get(self, request, *args, **kwargs):
+        
+        return super().get(request, *args, **kwargs)
+
+
+class VerifyTokenView(APIView):
+    def get(self, request, verification_token):
+        try:
+            user = User.objects.get(verification_token=verification_token)
+            if user:
+                user.is_active = True
+                user.save()
+                return redirect('/') 
+        except User.DoesNotExist:
+            return HttpResponse("Token inválido o expirado. Por favor, contacta al soporte.")

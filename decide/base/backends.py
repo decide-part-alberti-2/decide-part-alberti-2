@@ -18,27 +18,21 @@ class AuthBackend(ModelBackend):
     '''
 
     def authenticate(self, request, username=None, password=None, **kwargs):
-        u = super().authenticate(request, username=username,
-                                 password=password, **kwargs)
+    # Verifica si request es None antes de acceder a su contenido
+        if request is None:
+            return None
 
-        # Solo se realiza esto para la interfaz web de administración
-        if u and request.content_type == 'application/x-www-form-urlencoded':
-            data = {
-                'username': username,
-                'password': password,
-            }
-            token = mods.post('authentication', entry_point='/login/', json=data)
-            request.session['auth-token'] = token['token']
+        user = super().authenticate(request, username=username, password=password, **kwargs)
 
-            # Generar un token único para la verificación por correo electrónico
-            verification_token = secrets.token_urlsafe(20)
-            request.session['verification-token'] = verification_token
+        # Verifica si request tiene content_type antes de acceder a él
+        if user and hasattr(request, 'content_type') and request.content_type == 'application/x-www-form-urlencoded':
+            # Resto de tu lógica aquí...
+            # Aquí puedes colocar el mensaje que se enviará al usuario registrado
+            message = 'Te has registrado correctamente en nuestra plataforma.'
 
-            # Enviar correo electrónico al usuario autenticado con el enlace de verificación
-            verification_link = f'http:/verify-token/'
-            subject = 'Verificación de inicio de sesión'
-            message = f'Por favor, haga clic en el siguiente enlace para verificar su inicio de sesión: {verification_link} con el token {verification_token}'
-            recipients = [u.email]  # Asumiendo que el modelo de usuario tiene un campo 'email'
+            # Envío de correo electrónico al usuario registrado
+            subject = 'Registro Exitoso'
+            recipients = [user.email]  # Asumiendo que el modelo de usuario tiene un campo 'email'
 
             send_mail(
                 subject=subject,
@@ -47,5 +41,4 @@ class AuthBackend(ModelBackend):
                 recipient_list=recipients
             )
 
-
-        return u
+        return user

@@ -16,6 +16,15 @@ from django.contrib.auth import authenticate, login
 from django.http import HttpResponse
 import re
 from django.template.loader import get_template
+from django.core.mail import send_mail
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.contrib.auth import get_user_model
+from django.views import View
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
 
 class GetUserView(APIView):
     def post(self, request):
@@ -35,11 +44,13 @@ class LogoutView(APIView):
 
         return Response({})
 
+def account_activation_token(user):
+    return default_token_generator.make_token(user)
 
 class RegisterView(CreateView):
     template_name = "register.html"
     form_class = UserCreationForm  # Usamos el formulario de creación de usuario predeterminado
-    success_url = '/'  # URL a la que redirigir después de un registro exitoso
+    success_url = '/login-view/'  # URL a la que redirigir después de un registro exitoso
     model = User
 
     def post(self, request, *args, **kwargs):
@@ -50,16 +61,70 @@ class RegisterView(CreateView):
             return self.form_invalid(form)
 
     def form_valid(self, form):
-        self.object = form.save()
-        username = form.cleaned_data.get('username')
-        password = form.cleaned_data.get('password1')
-        user = authenticate(username=username, password=password)
-        login(self.request, user)
-        return super().form_valid(form)
+        self.object = form.save(commit=False)
+        self.object.is_active = False
+        self.object.save()
+
+        # Envío de correo electrónico de verificación
+        current_site = get_current_site(self.request)
+        mail_subject = 'Activa tu cuenta'
+        
+        # Generar el token de activación
+        uid = urlsafe_base64_encode(force_bytes(self.object.pk))
+        token = account_activation_token(self.object)
+
+        # Comprobar si se genera correctamente el token
+        if not token:
+            return HttpResponse('Error al generar el token de activación.')
+
+        # Construir el mensaje del correo electrónico
+        message = render_to_string('account_activation_email.html', {
+            'user': self.object,
+            'domain': current_site.domain,
+            'uid': uid,
+            'token': token,
+        })
+        to_email = form.cleaned_data.get('email')
+
+        # Comprobar si se construye correctamente el mensaje
+        if not message:
+            return HttpResponse('Error al construir el mensaje de correo electrónico.')
+
+        # Enviar el correo electrónico (verifica los valores pasados)
+        try:
+            send_mail(
+                mail_subject,
+                message,
+                settings.EMAIL_HOST_USER,
+                [to_email],
+                fail_silently=False,
+            )
+            return HttpResponse('Correo electrónico enviado con éxito.')
+        except Exception as e:
+            # Si hay un error al enviar el correo electrónico, muestra el mensaje de error
+            return HttpResponse(f'Error al enviar el correo electrónico: {str(e)}')
 
     def form_invalid(self, form):
         return HttpResponse("Error en el registro. Por favor, verifica los datos proporcionados.", status=HTTP_400_BAD_REQUEST)
 
+User = get_user_model()
+
+class AccountActivationView(View):
+    def get(self, request, uidb64, token):
+        try:
+            uid = force_text(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user and default_token_generator.check_token(user, token):
+            user.is_active = True
+            user.save()
+            messages.success(request, 'Tu cuenta ha sido activada. Ahora puedes iniciar sesión.')
+            return redirect('login-view')  # Redirige a la página de inicio de sesión después de activar la cuenta
+        else:
+            messages.error(request, 'El enlace de activación es inválido o ha caducado.')
+            return redirect('login-view')  # Redirige a la página de inicio de sesión si hay un problema con la activación
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
@@ -130,15 +195,3 @@ class LoginView(CreateView):
     def get(self, request, *args, **kwargs):
         
         return super().get(request, *args, **kwargs)
-
-
-class VerifyTokenView(APIView):
-    def get(self, request, verification_token):
-        try:
-            user = User.objects.get(verification_token=verification_token)
-            if user:
-                user.is_active = True
-                user.save()
-                return redirect('/') 
-        except User.DoesNotExist:
-            return HttpResponse("Token inválido o expirado. Por favor, contacta al soporte.")

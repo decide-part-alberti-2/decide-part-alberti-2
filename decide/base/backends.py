@@ -26,12 +26,11 @@ class AuthBackend(ModelBackend):
 
         # Verifica si request tiene content_type antes de acceder a él
         if user and hasattr(request, 'content_type') and request.content_type == 'application/x-www-form-urlencoded':
-            # Resto de tu lógica aquí...
-            # Aquí puedes colocar el mensaje que se enviará al usuario registrado
-            message = 'Te has registrado correctamente en nuestra plataforma.'
+
+            message = 'Te has logueado correctamente en nuestra plataforma.'
 
             # Envío de correo electrónico al usuario registrado
-            subject = 'Registro Exitoso'
+            subject = 'LOGIN Exitoso'
             recipients = [user.email]  # Asumiendo que el modelo de usuario tiene un campo 'email'
 
             send_mail(

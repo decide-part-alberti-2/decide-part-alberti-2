@@ -26,7 +26,10 @@ def export_to_csv(modeladmin, request, queryset):
             data_row.append(value)
         writer.writerow(data_row)
     return response
+
+
 export_to_csv.short_description = 'Export to CSV'
+
 
 class CensusAdmin(admin.ModelAdmin):
     list_display = ('voting_id', 'voter_id')

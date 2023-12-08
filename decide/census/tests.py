@@ -164,3 +164,27 @@ class CensusTest(StaticLiveServerTestCase):
 
         self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
         self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/census/census/add")
+
+    def test_export_to_pdf(self):
+        # Crea un queryset con los datos de prueba
+        queryset = Census.objects.all()
+
+        # Invoque la función de exportación
+        response = export_to_pdf(None, None, queryset)
+
+        # Verifique que la respuesta sea un objeto HttpResponse
+        self.assertIsInstance(response, HttpResponse)
+
+        # Verifique que el contenido de la respuesta sea un archivo PDF válido
+        pdf_data = response.getvalue()
+        # Puedes agregar pruebas adicionales para verificar el contenido del archivo PDF si es necesario
+
+    def test_get_related_object(self):
+        # Prueba la función get_related_object con datos de prueba
+        user = User.objects.create(username='testuser')
+        related_user = get_related_object('User', user.pk)
+        self.assertEqual(user, related_user)
+
+        census = Census.objects.create(voting_id=1, voter_id=user, date_of_birth=timezone.now())
+        related_census = get_related_object('Census', census.pk)
+        self.assertEqual(census, related_census)

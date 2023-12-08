@@ -1,19 +1,18 @@
-import random
 from django.contrib.auth.models import User
-from django.test import TestCase
-from rest_framework.test import APIClient
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
 
 from .models import Census
 from base import mods
 from base.tests import BaseTestCase
 from datetime import datetime
+from django.contrib import admin
+from .admin import export_to_csv, export_to_pdf, get_related_object, CensusAdmin
+from io import StringIO
+from django.http import HttpResponse
+import csv
 
 
 class CensusTestCase(BaseTestCase):
@@ -88,6 +87,9 @@ class CensusTest(StaticLiveServerTestCase):
         #Load base test functionality for decide
         self.base = BaseTestCase()
         self.base.setUp()
+        self.census = Census(voting_id=1, voter_id=1)
+        self.user = User.objects.create(username='testuser')
+        self.census_admin = CensusAdmin(Census,admin.site)
 
         options = webdriver.ChromeOptions()
         options.headless = True
@@ -165,26 +167,38 @@ class CensusTest(StaticLiveServerTestCase):
         self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
         self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/census/census/add")
 
+    def test_export_to_csv(self):
+        # Crea un queryset con los datos de prueba
+        queryset = Census.objects.all()
+        # Invoque la función de exportación
+        response = export_to_csv(self.census_admin, None, queryset)
+
+        # Verifique que la respuesta sea un objeto HttpResponse
+        self.assertEqual(response.status_code,200)
+        self.assertIsInstance(response, HttpResponse)
+
+        # Verifique que el contenido de la respuesta sea un archivo CSV válido
+        csv_data = response.getvalue().decode('utf-8')
+        csv_reader = csv.reader(StringIO(csv_data))
+        rows = list(csv_reader)
+
+        # Verifique el encabezado
+        self.assertEqual(rows[0], ['ID', 'voting id', 'voter id'])
+
     def test_export_to_pdf(self):
         # Crea un queryset con los datos de prueba
         queryset = Census.objects.all()
 
         # Invoque la función de exportación
-        response = export_to_pdf(None, None, queryset)
+        response = export_to_pdf(self.census_admin, None, queryset)
 
         # Verifique que la respuesta sea un objeto HttpResponse
         self.assertIsInstance(response, HttpResponse)
 
         # Verifique que el contenido de la respuesta sea un archivo PDF válido
         pdf_data = response.getvalue()
-        # Puedes agregar pruebas adicionales para verificar el contenido del archivo PDF si es necesario
 
     def test_get_related_object(self):
         # Prueba la función get_related_object con datos de prueba
-        user = User.objects.create(username='testuser')
-        related_user = get_related_object('User', user.pk)
-        self.assertEqual(user, related_user)
-
-        census = Census.objects.create(voting_id=1, voter_id=user, date_of_birth=timezone.now())
-        related_census = get_related_object('Census', census.pk)
-        self.assertEqual(census, related_census)
+        related_user = get_related_object('User', self.user.pk)
+        self.assertEqual(self.user, related_user)

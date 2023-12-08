@@ -10,6 +10,10 @@ from django.http import FileResponse
 from django.contrib import admin
 
 from .models import Census
+from voting.models import Voting
+from django.contrib.auth.models import User
+
+
 
 def export_to_csv(modeladmin, request, queryset):
     opts = modeladmin.model._meta
@@ -26,6 +30,15 @@ def export_to_csv(modeladmin, request, queryset):
         data_row = []
         for field in fields:
             value = getattr(obj,field.name)
+            if field.name in ['voter_id','voting_id']:
+                model_name = 'User' if field.name == 'voter_id' else 'Voting'
+                if model_name == 'User':
+                    find = 4
+                else:
+                    find = 1
+                related_obj = get_related_object(model_name, value)
+                name_field = related_obj._meta.fields[find]
+                value = getattr(related_obj,name_field.name)
             if isinstance(value,datetime.datetime):
                 value = value.strftime('%d/%m/%Y')
             data_row.append(value)
@@ -35,6 +48,13 @@ def export_to_csv(modeladmin, request, queryset):
 
 export_to_csv.short_description = 'Export to CSV'
 
+def get_related_object(model_name, id_value):
+    if model_name == 'User':
+        return User.objects.get(pk=id_value)
+    elif model_name == 'Voting':
+        return Voting.objects.get(pk=id_value)
+    else:
+        raise ValueError(f"Invalid model name: {model_name}")
 
 
 def export_to_pdf(modeladmin, request, queryset):
@@ -55,6 +75,15 @@ def export_to_pdf(modeladmin, request, queryset):
     for obj in queryset:
         for field in fields:
             value = getattr(obj, field.name)
+            if field.name in ['voter_id','voting_id']:
+                model_name = 'User' if field.name == 'voter_id' else 'Voting'
+                if model_name == 'User':
+                    find = 4
+                else:
+                    find = 1
+                related_obj = get_related_object(model_name, value)
+                name_field = related_obj._meta.fields[find]
+                value = getattr(related_obj,name_field.name)
             if isinstance(value, datetime.datetime):
                 value = value.strftime('%d/%m/%Y')
             p.drawString(100, y, f"{field.verbose_name}: {value}")

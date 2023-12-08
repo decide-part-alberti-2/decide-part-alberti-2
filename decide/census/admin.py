@@ -2,10 +2,7 @@ import csv
 import datetime
 from io import BytesIO
 from django.http import HttpResponse
-from django.utils.translation import gettext as _
-from django.urls import path
 from reportlab.pdfgen import canvas
-from django.http import FileResponse
 
 from django.contrib import admin
 
@@ -97,6 +94,7 @@ def export_to_pdf(modeladmin, request, queryset):
     response.write(buffer.read())
     buffer.close()
     return response
+
 
 export_to_pdf.short_description = 'Export to PDF'
 

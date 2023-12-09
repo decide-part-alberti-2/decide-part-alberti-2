@@ -1,13 +1,16 @@
-from django.urls import include, path
-from rest_framework.authtoken.views import obtain_auth_token
+from django.urls import path, include
+from . import views
+from django.contrib.auth import views as auth_views
 
-from .views import GetUserView, LogoutView, RegisterView, LoginView
 
 urlpatterns = [
-   # path('verify-token/<str:verification_token>/', LoginView.as_view(), name='verificar_inicio_sesion'),
-    path('verify-token/', LoginView.as_view(), name='verify_token'),
-    path('login/', obtain_auth_token),
-    path('logout/', LogoutView.as_view()),
-    path('getuser/', GetUserView.as_view()),
-    path('register/', RegisterView.as_view()),
+ 
+    path('login/', auth_views.LoginView.as_view(), name='login'),
+    path('', include('django.contrib.auth.urls')),
+    path('register/', views.register, name='register'),
+    
+    
+
+ 
+
 ]

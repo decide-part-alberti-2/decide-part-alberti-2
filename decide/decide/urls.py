@@ -17,7 +17,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_swagger.views import get_swagger_view
-from authentication.views import LoginView, RegisterView, AccountActivationView
+
 
 
 schema_view = get_swagger_view(title='Decide API')
@@ -26,9 +26,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('doc/', schema_view),
     path('gateway/', include('gateway.urls')),
-    path('login-view/', LoginView.as_view()), 
-    path('register-view/', RegisterView.as_view()), 
-    path('account-activation/<uidb64>/<token>/', AccountActivationView.as_view(), name='account_activation'),
+    path('', include('authentication.urls')),
+  
 ]
 
 for module in settings.MODULES:

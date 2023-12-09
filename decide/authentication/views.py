@@ -12,9 +12,17 @@ def user_login(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
-            user = authenticate(request,
-                                usuario=cd['usuario'],
-                                contraseña=cd['contraseña'])
+            usuario_email = cd.get('usuario_email')
+            contraseña = cd.get('contraseña')
+
+            user = None
+            if '@' in usuario_email:
+                users = User.objects.filter(email=usuario_email)
+                if users.exists():
+                    user = authenticate(email=usuario_email, password=contraseña)
+            else:
+                user = authenticate(username=usuario_email, password=contraseña)
+
             if user is not None:
                 if user.is_active:
                     login(request, user)

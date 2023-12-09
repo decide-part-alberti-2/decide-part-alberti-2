@@ -13,12 +13,12 @@
         <form action="" method="post">
             <h1>Login</h1>
             <div class="fieldWrapper">
-                <label for="id_username">Username:</label>
-                <input type="text" name="username" class="form-control mb-2" required="" id="id_username">
+                <label for="id_usuario_email">Nombre de usuario o email:</label>
+                <input type="text" name="usuario_email" class="form-control mb-2" required="" id="id_usuario_email">
             </div>
 
             <div class="fieldWrapper">
-                <label for="id_password1">Password:</label>
+                <label for="id_password1">Contraseña:</label>
                 <input type="text" name="password1" class="form-control mb-2" required="" id="id_password1">
             </div>
             {% csrf_token %}

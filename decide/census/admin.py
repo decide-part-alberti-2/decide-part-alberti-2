@@ -135,7 +135,7 @@ class CensusAdmin(admin.ModelAdmin):
             df = pd.read_csv(file)
 
             # Itera sobre las filas del DataFrame y crea censos
-            for index, row in df.iterrows():
+            for _, row in df.iterrows():
                 Census.objects.create(voting_id=row['voting_id'], voter_id=row['voter_id'])
 
             self.message_user(request, f"Successfully imported {len(df)} censuses from CSV.")

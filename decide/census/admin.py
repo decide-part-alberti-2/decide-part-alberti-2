@@ -102,8 +102,8 @@ export_to_pdf.short_description = 'Export to PDF'
 
 
 def view_online(self, request, queryset):
-        # Redirige a la vista HTML para ver los censos en línea
-        return HttpResponseRedirect(reverse('view_census'))
+    # Redirige a la vista HTML para ver los censos en línea
+    return HttpResponseRedirect(reverse('view_census'))
 
 
 view_online.short_description = 'View Online'

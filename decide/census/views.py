@@ -33,7 +33,7 @@ class CensusCreate(generics.ListCreateAPIView):
         voting_id = request.GET.get('voting_id')
         voters = Census.objects.filter(voting_id=voting_id).values_list('voter_id', flat=True)
         return Response({'voters': voters})
-    
+
     def view_census(request):
         censuses = Census.objects.all()
         cs = []

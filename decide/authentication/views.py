@@ -3,10 +3,6 @@ from django.http import HttpResponse
 from django.contrib.auth import authenticate, login 
 from .forms import LoginForm, UserRegistrationForm
 
-
-
-
-
 def user_login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -14,6 +10,7 @@ def user_login(request):
             cd = form.cleaned_data
             usuario_email = cd.get('usuario_email')
             contraseña = cd.get('contraseña')
+            print(usuario_email)
 
             user = None
             if '@' in usuario_email:
@@ -33,17 +30,20 @@ def user_login(request):
                 return HttpResponse('Inicio de sesión inválido')
     else:
         form = LoginForm()
+        print(user_form.errors)
     return render(request, 'login.html', {'form': form})
-
 
 def register(request):
     if request.method == 'POST':
         user_form = UserRegistrationForm(request.POST)
         if user_form.is_valid():
             new_user = user_form.save(commit=False)
-            new_user.set_password(user_form.cleaned_data['contraseña'])
+            new_user.set_password(user_form.cleaned_data['password1']) 
             new_user.save()
+            print("Usuario guardado exitosamente:", new_user.username)
             return render(request, 'register_done.html', {'new_user': new_user})
+        else:
+            print("Errores en el formulario:", user_form.errors)
     else:
         user_form = UserRegistrationForm()
     

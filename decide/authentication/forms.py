@@ -30,8 +30,8 @@ class LoginForm(forms.Form):
 
 
 class UserRegistrationForm(forms.ModelForm):
-    contraseña = forms.CharField(label='Contraseña' , widget=forms.PasswordInput )
-    contraseña2 = forms.CharField(label='Repite la contraseña' , widget=forms.PasswordInput )
+    password1 = forms.CharField(label='Contraseña' , widget=forms.PasswordInput )
+    password2 = forms.CharField(label='Repite la contraseña' , widget=forms.PasswordInput )
 
 
     class Meta:
@@ -45,8 +45,8 @@ class UserRegistrationForm(forms.ModelForm):
            
         }
 
-    def clean_contrasena2(self):
+    def clean_contraseña2(self):  
         cd = self.cleaned_data
-        if cd['contraseña'] != cd['contraseña2']:
+        if cd['password1'] != cd['password2']:
             raise forms.ValidationError('La contraseña no coincide')
-        return cd['contraseña2']
+        return cd['password12']

@@ -32,7 +32,7 @@ class LogoutView(APIView):
 
 def user_login(request):
     if request.method == 'POST':
-        form = LoginForm(request.POST)        
+        form = LoginForm(request.POST)    
         if form.is_valid():
             cd = form.cleaned_data
             usuario_email = cd.get('usuario_email')
@@ -102,5 +102,4 @@ def register(request):
             print("Errores en el formulario:", user_form.errors)
     else:
         user_form = UserRegistrationForm()
-    
     return render(request, 'register.html', {'user_form': user_form})

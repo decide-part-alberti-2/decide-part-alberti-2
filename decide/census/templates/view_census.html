@@ -1,11 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Censuses</title>
+    <style>
+        body {
+            background-color: #ecf0f5; /* Celeste claro */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #3498db; /* Azul claro */
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #3498db; /* Azul claro */
+            color: #fff; /* Blanco */
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        a:hover {
+            background-color: #2980b9; /* Azul más oscuro al pasar el mouse */
+        }
+
+        table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 80%;
+            max-width: 600px;
+            background-color: #fff; /* Blanco */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd; /* Gris claro */
+        }
+
+        th {
+            background-color: #3498db; /* Azul claro */
+            color: #fff; /* Blanco */
+        }
+
+        tr:hover {
+            background-color: #f5f5f5; /* Gris más claro al pasar el mouse */
+        }
+    </style>
 </head>
 <body>
     <h1>List of Censuses</h1>
-    <a type="button" href="/admin/census/census">Go back</a>
+    <a href="/admin/census/census">Go back</a>
     <table border="1">
         <thead>
             <tr>

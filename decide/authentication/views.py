@@ -32,7 +32,7 @@ class LogoutView(APIView):
 
 def user_login(request):
     if request.method == 'POST':
-        form = LoginForm(request.POST)    
+        form = LoginForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
             usuario_email = cd.get('usuario_email')

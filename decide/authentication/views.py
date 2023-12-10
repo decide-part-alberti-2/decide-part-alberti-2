@@ -49,7 +49,7 @@ def activate_user(request, user_id):
     user = get_object_or_404(User, pk=user_id)
     user.is_active = True
     user.save()
-    return redirect('activation_email.html')
+    return redirect('activation_success')  # Redirige a la página de inicio de sesión después de la activación
 
 def activation_success(request):
     return render(request, 'activation_email.html') 

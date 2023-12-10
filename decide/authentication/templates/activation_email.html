@@ -3,17 +3,17 @@
 
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Activación de Cuenta</title>
-</head>
-<body>
+{% block extrahead %}
+    <link type="text/css" rel="stylesheet"
+         href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet"
+         href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css" />
+    <link type="text/css" rel="stylesheet" href='{% static "booth/style.css" %}' />
+{% endblock %}
+
+{% block content %}
     <h2>¡Bienvenido {{ user.username }}!</h2>
     <p>
         Gracias por verificar tu cuenta, ya puedes iniciar sesión.
     </p>
-
-</body>
-</html>
+{% endblock %}

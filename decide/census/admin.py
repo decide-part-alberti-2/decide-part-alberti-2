@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from reportlab.pdfgen import canvas
 from django.urls import reverse
-
+from django.shortcuts import redirect
 from django.contrib import admin
 
 from .models import Census
@@ -110,12 +110,20 @@ def view_online(self, request, queryset):
 view_online.short_description = 'View Online'
 
 
+def view_import(self, request, queryset):
+    # Redirige a la vista HTML para ver los censos en línea
+    return redirect('/census/import_census')
+
+
+view_import.short_description = 'View import from csv'
+
+
 class CensusAdmin(admin.ModelAdmin):
     list_display = ('voting_id', 'voter_id')
     list_filter = ('voting_id', )
 
     search_fields = ('voter_id', )
-    actions = [export_to_csv, export_to_pdf, view_online]
+    actions = [export_to_csv, export_to_pdf, view_online,view_import]
 
     def import_from_csv(self, request, queryset):
         # Implementa la lógica de importación desde CSV aquí

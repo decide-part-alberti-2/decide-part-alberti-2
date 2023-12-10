@@ -12,7 +12,8 @@ from rest_framework.status import (
 
 from base.perms import UserIsStaff
 from .models import Census
-
+from django.shortcuts import render
+from .admin import get_related_object
 
 class CensusCreate(generics.ListCreateAPIView):
     permission_classes = (UserIsStaff,)
@@ -32,6 +33,19 @@ class CensusCreate(generics.ListCreateAPIView):
         voting_id = request.GET.get('voting_id')
         voters = Census.objects.filter(voting_id=voting_id).values_list('voter_id', flat=True)
         return Response({'voters': voters})
+
+    def view_census(request):
+        censuses = Census.objects.all()
+        cs = []
+
+        for census in censuses:
+            c = []
+            c.append(census.id)
+            c.append(getattr(get_related_object('Voting',census.voting_id),get_related_object('Voting',census.voting_id)._meta.fields[1].name))
+            c.append(getattr(get_related_object('User',census.voter_id),get_related_object('User',census.voter_id)._meta.fields[4].name))
+            cs.append(c)
+
+        return render(request, 'view_census.html', {'cs': cs})
 
 
 class CensusDetail(generics.RetrieveDestroyAPIView):

@@ -2,7 +2,9 @@ import csv
 import datetime
 from io import BytesIO
 from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from reportlab.pdfgen import canvas
+from django.urls import reverse
 
 from django.contrib import admin
 
@@ -99,12 +101,20 @@ def export_to_pdf(modeladmin, request, queryset):
 export_to_pdf.short_description = 'Export to PDF'
 
 
+def view_online(self, request, queryset):
+    # Redirige a la vista HTML para ver los censos en línea
+    return HttpResponseRedirect(reverse('view_census'))
+
+
+view_online.short_description = 'View Online'
+
+
 class CensusAdmin(admin.ModelAdmin):
     list_display = ('voting_id', 'voter_id')
     list_filter = ('voting_id', )
 
     search_fields = ('voter_id', )
-    actions = [export_to_csv, export_to_pdf]
+    actions = [export_to_csv, export_to_pdf, view_online]
 
 
 admin.site.register(Census, CensusAdmin)

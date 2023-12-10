@@ -195,9 +195,6 @@ class CensusTest(StaticLiveServerTestCase):
         # Verifique que la respuesta sea un objeto HttpResponse
         self.assertIsInstance(response, HttpResponse)
 
-        # Verifique que el contenido de la respuesta sea un archivo PDF válido
-        pdf_data = response.getvalue()
-
     def test_get_related_object(self):
         # Prueba la función get_related_object con datos de prueba
         related_user = get_related_object('User', self.user.pk)

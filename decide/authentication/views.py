@@ -1,27 +1,42 @@
 from django.http import HttpResponse
-from django.contrib.auth import authenticate, login 
+from django.contrib.auth import authenticate, login
 from .forms import LoginForm, UserRegistrationForm
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.template.loader import render_to_string
-from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.authtoken.models import Token
+from .serializers import UserSerializer
+
+class GetUserView(APIView):
+    def post(self, request):
+        key = request.data.get('token', '')
+        tk = get_object_or_404(Token, key=key)
+        return Response(UserSerializer(tk.user, many=False).data)
+
+
+class LogoutView(APIView):
+    def post(self, request):
+        key = request.data.get('token', '')
+        try:
+            tk = Token.objects.get(key=key)
+            tk.delete()
+        except ObjectDoesNotExist:
+            pass
+
+        return Response({})
 
 def user_login(request):
     if request.method == 'POST':
-        form = LoginForm(request.POST)
-        
+        form = LoginForm(request.POST)        
         if form.is_valid():
             cd = form.cleaned_data
             usuario_email = cd.get('usuario_email')
             password1 = cd.get('password1')
-            
             user = None
             if usuario_email and '@' in usuario_email:
                 # Si es un correo electrónico, busca por email
@@ -42,7 +57,7 @@ def user_login(request):
                 return HttpResponse('Inicio de sesión inválido')
     else:
         form = LoginForm()
-        print(form.errors) 
+        print(form.errors)
     return render(request, 'login.html', {'form': form})
 
 def activate_user(request, user_id):
@@ -52,7 +67,7 @@ def activate_user(request, user_id):
     return redirect('activation_success')  # Redirige a la página de inicio de sesión después de la activación
 
 def activation_success(request):
-    return render(request, 'activation_email.html') 
+    return render(request, 'activation_email.html')
 
 def register(request):
     if request.method == 'POST':

@@ -1,4 +1,5 @@
 from django.contrib.auth.backends import ModelBackend
+from django.contrib.auth import get_user_model
 
 from base import mods
 import secrets
@@ -6,6 +7,7 @@ import secrets
 from django.core.mail import send_mail
 from django.conf import settings
 
+UserModel = get_user_model()
 
 class AuthBackend(ModelBackend):
     '''
@@ -18,26 +20,19 @@ class AuthBackend(ModelBackend):
     '''
 
     def authenticate(self, request, username=None, password=None, **kwargs):
-    # Verifica si request es None antes de acceder a su contenido
-        if request is None:
+        # Verifica si username es un correo electrónico
+        if '@' in username:
+            try:
+                user = UserModel.objects.get(email=username)
+            except UserModel.DoesNotExist:
+                return None
+        else:
+            # Si username no es un correo electrónico, usa el nombre de usuario
+            user = super().authenticate(request, username=username, password=password, **kwargs)
+
+        # Verifica la contraseña si se encontró un usuario
+        if user and user.check_password(password):
+            return user
+        else:
             return None
-
-        user = super().authenticate(request, username=username, password=password, **kwargs)
-
-        # Verifica si request tiene content_type antes de acceder a él
-        if user and hasattr(request, 'content_type') and request.content_type == 'application/x-www-form-urlencoded':
-
-            message = 'Te has logueado correctamente en nuestra plataforma.'
-
-            # Envío de correo electrónico al usuario registrado
-            subject = 'LOGIN Exitoso'
-            recipients = [user.email]  # Asumiendo que el modelo de usuario tiene un campo 'email'
-
-            send_mail(
-                subject=subject,
-                message=message,
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=recipients
-            )
-
-        return user
+    

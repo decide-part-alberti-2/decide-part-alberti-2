@@ -1,16 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Import Census Result</title>
+    <style>
+        body {
+            background-color: #ecf0f1;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+
+        h1 {
+            color: #3498db;
+        }
+
+        p {
+            margin: 20px 0;
+            color: #2c3e50;
+        }
+
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 
 <body>
-
     <h1>Import Census Result</h1>
     <p>{{ message }}</p>
     <a href="{% url 'admin:census_census_changelist' %}">Go back to Census list</a>
-    
 </body>
+
 </html>

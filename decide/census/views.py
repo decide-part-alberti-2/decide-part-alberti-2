@@ -13,7 +13,8 @@ from rest_framework.status import (
 from base.perms import UserIsStaff
 from .models import Census
 from django.shortcuts import render
-from .admin import get_related_object
+from .admin import get_related_object, CensusAdmin
+from django.contrib import admin
 
 class CensusCreate(generics.ListCreateAPIView):
     permission_classes = (UserIsStaff,)
@@ -47,6 +48,13 @@ class CensusCreate(generics.ListCreateAPIView):
 
         return render(request, 'view_census.html', {'cs': cs})
 
+    def import_census_from_csv(request):
+        if request.method == 'POST':
+            admin_instance = CensusAdmin(Census, admin.site)
+            admin_instance.import_from_csv(request, None)
+            return render(request, 'import_census.html')
+
+        return render(request, 'import_census_form.html')
 
 class CensusDetail(generics.RetrieveDestroyAPIView):
 

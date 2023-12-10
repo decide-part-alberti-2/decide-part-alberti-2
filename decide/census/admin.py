@@ -1,5 +1,6 @@
 import csv
 import datetime
+import pandas as pd
 from io import BytesIO
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
@@ -115,6 +116,26 @@ class CensusAdmin(admin.ModelAdmin):
 
     search_fields = ('voter_id', )
     actions = [export_to_csv, export_to_pdf, view_online]
+
+    def import_from_csv(self, request, queryset):
+        # Implementa la lógica de importación desde CSV aquí
+        # Puedes utilizar el formulario de carga de archivos de Django para obtener el archivo CSV
+
+        # Ejemplo básico de cómo podrías leer un archivo CSV y agregar censos
+        try:
+            file = request.FILES['file']  # Asegúrate de que tu formulario de carga tenga un campo 'file'
+            df = pd.read_csv(file)
+
+            # Itera sobre las filas del DataFrame y crea censos
+            for index, row in df.iterrows():
+                Census.objects.create(voting_id=row['voting_id'], voter_id=row['voter_id'])
+
+            self.message_user(request, f"Successfully imported {len(df)} censuses from CSV.")
+        except Exception as e:
+            self.message_user(request, f"Error during import: {str(e)}", level='error')
+
+
+    import_from_csv.short_description = 'Import from CSV'
 
 
 admin.site.register(Census, CensusAdmin)

@@ -4,35 +4,38 @@ from django.contrib.auth import authenticate, login
 from .forms import LoginForm, UserRegistrationForm
 from django.core.mail import send_mail
 from django.conf import settings
+from django.contrib.auth.models import User
 
 def user_login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
+        
         if form.is_valid():
             cd = form.cleaned_data
             usuario_email = cd.get('usuario_email')
-            contraseña = cd.get('contraseña')
-            print(usuario_email)
-
+            password1 = cd.get('password1')
+            
             user = None
-            if '@' in usuario_email:
-                users = User.objects.filter(email=usuario_email)
-                if users.exists():
-                    user = authenticate(email=usuario_email, password=contraseña)
+            if usuario_email and '@' in usuario_email:
+                # Si es un correo electrónico, busca por email
+                user = User.objects.filter(email=usuario_email).first()
             else:
-                user = authenticate(username=usuario_email, password=contraseña)
+                # Si no es un correo, busca por nombre de usuario
+                user = User.objects.filter(username=usuario_email).first()
 
             if user is not None:
-                if user.is_active:
+                user = authenticate(username=user.username, password=password1)
+                if user is not None and user.is_active:
                     login(request, user)
+                    print("Usuario logueado correctamente")
                     return HttpResponse('Autentificación correcta')
                 else:
-                    return HttpResponse('Cuenta desactivada')
+                    return HttpResponse('Cuenta desactivada o credenciales inválidas')
             else:
                 return HttpResponse('Inicio de sesión inválido')
     else:
         form = LoginForm()
-        print(user_form.errors)
+        print(form.errors) 
     return render(request, 'login.html', {'form': form})
 
 def register(request):

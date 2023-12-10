@@ -1,32 +1,12 @@
 from django import forms
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 
 
 class LoginForm(forms.Form):
     usuario_email = forms.CharField()
-    contraseña = forms.CharField(widget=forms.PasswordInput)
+    password1 = forms.CharField(widget=forms.PasswordInput)
 
-    def clean(self):
-        cleaned_data = super().clean()
-        usuario_email = cleaned_data.get('usuario_email')
-        contraseña = cleaned_data.get('contraseña')
-
-        if usuario_email and contraseña:
-   
-            if '@' in usuario_email:
-                users = User.objects.filter(email=usuario_email)
-                if users.exists():
-                    user = authenticate(email=usuario_email, password=contraseña)
-                    if user:
-                        cleaned_data['user'] = user
-                        return cleaned_data
-            else:
-                user = authenticate(username=usuario_email, password=contraseña)
-                if user:
-                    cleaned_data['user'] = user
-                    return cleaned_data
-
-            raise forms.ValidationError('Credenciales inválidas. Por favor, verifica tu usuario/email y contraseña.')
 
 
 class UserRegistrationForm(forms.ModelForm):

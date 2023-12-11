@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+    <link type="text/css" rel="stylesheet"
+         href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet"
+         href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css" />
+    <link type="text/css" rel="stylesheet" href='{% static "booth/style.css" %}' />
+{% endblock %}
+
+{% block title %}Bienvenido{% endblock %}
+
+{% block content %}
+  <h1> ¡Bienvenido {{ new_user.first_name}}!</h1>
+  <p>
+    Tu cuenta ha sido creada.
+    Podrás <a href="{% url "login" %}">iniciar sesión</a> después de verificar tu correo.
+  </p>
+{% endblock %}

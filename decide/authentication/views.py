@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from rest_framework.response import Response
 from django.contrib.auth import authenticate, login
 from .forms import LoginForm, UserRegistrationForm
 from django.core.mail import send_mail
@@ -10,7 +10,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.authtoken.models import Token
+from django.http import JsonResponse
 from .serializers import UserSerializer
+from django.db import IntegrityError
+import json
 
 class GetUserView(APIView):
     def post(self, request):
@@ -21,44 +24,63 @@ class GetUserView(APIView):
 
 class LogoutView(APIView):
     def post(self, request):
-        key = request.data.get('token', '')
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                key = data.get('token')
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Formato JSON inválido'}, status=400)
+        else:
+            key = request.POST.get('token')
         try:
             tk = Token.objects.get(key=key)
             tk.delete()
         except ObjectDoesNotExist:
-            pass
+            print("El token no existe")
 
         return Response({})
 
 def user_login(request):
     if request.method == 'POST':
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            cd = form.cleaned_data
-            usuario_email = cd.get('usuario_email')
-            password1 = cd.get('password1')
+        # Obtiene los datos del cuerpo de la solicitud como JSON
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                username = data.get('username')
+                password = data.get('password')
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Formato JSON inválido'}, status=400)
+        else:
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+        if username and password:
             user = None
-            if usuario_email and '@' in usuario_email:
+            if '@' in username:
                 # Si es un correo electrónico, busca por email
-                user = User.objects.filter(email=usuario_email).first()
+                user = User.objects.filter(email=username).first()
             else:
                 # Si no es un correo, busca por nombre de usuario
-                user = User.objects.filter(username=usuario_email).first()
-
+                user = User.objects.filter(username=username).first()
             if user is not None:
-                user = authenticate(username=user.username, password=password1)
-                if user is not None and user.is_active:
-                    login(request, user)
-                    print("Usuario logueado correctamente")
-                    return HttpResponse('Autentificación correcta')
-                else:
-                    return HttpResponse('Cuenta desactivada o credenciales inválidas')
+                # Realiza la autenticación del usuario
+                auth_user = authenticate(request, username=username, password=password)
+                if auth_user is not None:
+                    # Obtiene o crea el token si la autenticación es exitosa
+                    token, _ = Token.objects.get_or_create(user=auth_user)
+
+                    # Inicia sesión al usuario autenticado
+                    login(request, auth_user)
+
+                    # Retorna el token en la respuesta
+                    return JsonResponse({'token': token.key, 'message': 'Autenticación exitosa'})
             else:
-                return HttpResponse('Inicio de sesión inválido')
-    else:
-        form = LoginForm()
-        print(form.errors)
-    return render(request, 'login.html', {'form': form})
+                return JsonResponse({'message': 'Cuenta desactivada o credenciales inválidas'})
+
+    return JsonResponse({'error': 'Solicitud incorrecta'}, status=400)
+
+
+def login_form(request):
+    return render(request, 'login.html')
 
 def activate_user(request, user_id):
     user = get_object_or_404(User, pk=user_id)
@@ -71,35 +93,64 @@ def activation_success(request):
 
 def register(request):
     if request.method == 'POST':
-        user_form = UserRegistrationForm(request.POST)
-        if user_form.is_valid():
-            new_user = user_form.save(commit=False)
-            new_user.set_password(user_form.cleaned_data['password1'])
-            new_user.save()
+        if request.content_type == 'application/json':
+            key = None
+            if request.content_type == 'application/json':
+                try:
+                    data = request.POST if request.POST else json.loads(request.body)
+                    key = data.get('token', '')
+                except json.JSONDecodeError:
+                    return JsonResponse({'error': 'Formato JSON inválido'}, status=400)
+            else:
+                key = request.POST.get('token', '')
+            try:
+                tk = Token.objects.get(key=key)
+            except ObjectDoesNotExist:
+                return JsonResponse({'error': 'Token inválido'}, status=400)
 
-            # Obtener el ID del usuario registrado
-            user_id = new_user.id
+            if not tk.user.is_superuser:
+                return JsonResponse({}, status=401)
 
-            # Construir el enlace de activación usando la vista de activación y el ID del usuario
-            activation_link = f"{settings.BASEURL}{reverse('activate_user', args=[user_id])}"
+            username = data.get('username', '')
+            pwd = data.get('password', '')
+            if not username or not pwd:
+                return JsonResponse({}, status=400)
 
-            # Mensaje del correo electrónico
-            message = (
-                f"¡Gracias por registrarte! Para activar tu cuenta, haz clic en el siguiente enlace:\n\n"
-                f"{activation_link}\n\n"
-                f"Si el enlace no funciona, cópialo y pégalo en la barra de direcciones de tu navegador."
-            )
+            try:
+                user = User.objects.create_user(username=username, password=pwd)
+                token, _ = Token.objects.get_or_create(user=user)
+            except IntegrityError:
+                return JsonResponse({}, status=400)
 
-            # Enviar el correo electrónico
-            subject = 'Activa tu cuenta'
-            from_email = settings.EMAIL_HOST_USER
-            to_email = new_user.email
+            # Envío de correo electrónico para activación
+            send_activation_email(user)
 
-            send_mail(subject, message, from_email, [to_email])
-
-            return render(request, 'register_done.html', {'new_user': new_user})
+            return JsonResponse({'user_pk': user.pk, 'token': token.key}, status=201)
         else:
-            print("Errores en el formulario:", user_form.errors)
+            user_form = UserRegistrationForm(request.POST or None)
+            if user_form.is_valid():
+                new_user = user_form.save(commit=False)
+                new_user.set_password(user_form.cleaned_data['password'])
+                new_user.save()
+
+                # Envío de correo electrónico para activación
+                send_activation_email(new_user)
+
+                return render(request, 'register_done.html', {'new_user': new_user})
+            else:
+                print("Errores en el formulario:", user_form.errors)
     else:
         user_form = UserRegistrationForm()
     return render(request, 'register.html', {'user_form': user_form})
+
+def send_activation_email(user):
+    activation_link = f"{settings.BASEURL}{reverse('activate_user', args=[user.id])}"
+    message = (
+        f"¡Gracias por registrarte! Para activar tu cuenta, haz clic en el siguiente enlace:\n\n"
+        f"{activation_link}\n\n"
+        f"Si el enlace no funciona, cópialo y pégalo en la barra de direcciones de tu navegador."
+    )
+    subject = 'Activa tu cuenta'
+    from_email = settings.EMAIL_HOST_USER
+    to_email = user.email
+    send_mail(subject, message, from_email, [to_email])

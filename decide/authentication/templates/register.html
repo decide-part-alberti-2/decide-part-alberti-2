@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block content %}
-    <form action="" method="post">
+    <form action="{% url 'register' %}" method="post">
         {% csrf_token %}
         <h1>Registro de Usuario</h1>
         <div class="fieldWrapper">
@@ -20,17 +20,17 @@
 
         <div class="fieldWrapper">
             <label for="id_password1">Contraseña:</label>
-            <input type="password" name="password1" class="form-control mb-2" required="" id="id_password1">
+            <input type="password" name="password" class="form-control mb-2" required="" id="id_password">
         </div>
 
         <div class="fieldWrapper">
             <label for="id_password2">Repetir contraseña:</label>
-            <input type="password" name="password2" class="form-control mb-2" required="" id="id_password2">
+            <input type="password" name="password2" class="form-control mb-2" id="id_password2">
         </div>
 
         <div class="fieldWrapper">
             <label for="id_email">Correo electrónico:</label>
-            <input type="email" name="email" class="form-control mb-2" required="" id="id_email">
+            <input type="email" name="email" class="form-control mb-2" id="id_email">
         </div>
 
         <div class="fieldWrapper">

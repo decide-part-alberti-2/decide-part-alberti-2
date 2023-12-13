@@ -23,12 +23,19 @@ class GetUserView(APIView):
 
 class LogoutView(APIView):
     def post(self, request):
-        key = request.data.get('token', '')
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                key = data.get('token')
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Formato JSON inválido'}, status=400)
+        else:
+            key = request.POST.get('token')
         try:
             tk = Token.objects.get(key=key)
             tk.delete()
         except ObjectDoesNotExist:
-            pass
+            print("El token no existe")
 
         return Response({})
 

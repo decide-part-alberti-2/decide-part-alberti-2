@@ -4,6 +4,8 @@ from .views import GetUserView, LogoutView
 
 urlpatterns = [
     path('login/', views.user_login, name='login'),
+    path('authentication/login/', views.user_login, name='login'),
+    path('login-form/', views.login_form, name='login-form'),
     path('', include('django.contrib.auth.urls')),
     path('logout/', LogoutView.as_view()),
     path('getuser/', GetUserView.as_view()),

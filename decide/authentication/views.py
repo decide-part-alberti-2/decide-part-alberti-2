@@ -10,7 +10,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.authtoken.models import Token
+from django.http import JsonResponse
 from .serializers import UserSerializer
+import json
 
 class GetUserView(APIView):
     def post(self, request):
@@ -32,33 +34,45 @@ class LogoutView(APIView):
 
 def user_login(request):
     if request.method == 'POST':
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            cd = form.cleaned_data
-            usuario_email = cd.get('usuario_email')
-            password1 = cd.get('password1')
+        # Obtiene los datos del cuerpo de la solicitud como JSON
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                username = data.get('username')
+                password = data.get('password')
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Formato JSON inválido'}, status=400)
+        else:
+            username = request.POST.get('username')
+            password = request.POST.get('password')    
+        if username and password:
             user = None
-            if usuario_email and '@' in usuario_email:
+            if '@' in username:
                 # Si es un correo electrónico, busca por email
-                user = User.objects.filter(email=usuario_email).first()
+                user = User.objects.filter(email=username).first()
             else:
                 # Si no es un correo, busca por nombre de usuario
-                user = User.objects.filter(username=usuario_email).first()
-
+                user = User.objects.filter(username=username).first()
             if user is not None:
-                user = authenticate(username=user.username, password=password1)
-                if user is not None and user.is_active:
-                    login(request, user)
-                    print("Usuario logueado correctamente")
-                    return HttpResponse('Autentificación correcta')
-                else:
-                    return HttpResponse('Cuenta desactivada o credenciales inválidas')
+                # Realiza la autenticación del usuario
+                auth_user = authenticate(request, username=username, password=password)
+                if auth_user is not None:
+                    # Obtiene o crea el token si la autenticación es exitosa
+                    token, created = Token.objects.get_or_create(user=auth_user)
+
+                    # Inicia sesión al usuario autenticado
+                    login(request, auth_user)
+
+                    # Retorna el token en la respuesta
+                    return JsonResponse({'token': token.key, 'message': 'Autenticación exitosa'})
             else:
-                return HttpResponse('Inicio de sesión inválido')
-    else:
-        form = LoginForm()
-        print(form.errors)
-    return render(request, 'login.html', {'form': form})
+                return JsonResponse({'message': 'Cuenta desactivada o credenciales inválidas'})
+
+    return JsonResponse({'error': 'Solicitud incorrecta'}, status=400)
+
+
+def login_form(request):
+    return render(request, 'login.html')
 
 def activate_user(request, user_id):
     user = get_object_or_404(User, pk=user_id)
@@ -74,7 +88,7 @@ def register(request):
         user_form = UserRegistrationForm(request.POST)
         if user_form.is_valid():
             new_user = user_form.save(commit=False)
-            new_user.set_password(user_form.cleaned_data['password1'])
+            new_user.set_password(user_form.cleaned_data['password'])
             new_user.save()
 
             # Obtener el ID del usuario registrado

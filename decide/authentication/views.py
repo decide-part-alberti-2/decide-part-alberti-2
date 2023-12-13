@@ -1,4 +1,3 @@
-from django.http import HttpResponse
 from rest_framework.response import Response
 from rest_framework.status import (
         HTTP_201_CREATED,
@@ -127,45 +126,21 @@ def register(request):
                 token, _ = Token.objects.get_or_create(user=user)
             except IntegrityError:
                 return JsonResponse({}, status=400)
+
             # Envío de correo electrónico para activación
-            activation_link = f"{settings.BASEURL}{reverse('activate_user', args=[user.id])}"
-            message = (
-                f"¡Gracias por registrarte! Para activar tu cuenta, haz clic en el siguiente enlace:\n\n"
-                f"{activation_link}\n\n"
-                f"Si el enlace no funciona, cópialo y pégalo en la barra de direcciones de tu navegador."
-            )
-            subject = 'Activa tu cuenta'
-            from_email = settings.EMAIL_HOST_USER
-            to_email = user.email
-            send_mail(subject, message, from_email, [to_email])
+            send_activation_email(user)
 
             return JsonResponse({'user_pk': user.pk, 'token': token.key}, status=201)
+    
         else:
-            user_form = UserRegistrationForm(request.POST)
+            user_form = UserRegistrationForm(request.POST or None)
             if user_form.is_valid():
                 new_user = user_form.save(commit=False)
                 new_user.set_password(user_form.cleaned_data['password'])
                 new_user.save()
 
-                # Obtener el ID del usuario registrado
-                user_id = new_user.id
-
-                # Construir el enlace de activación usando la vista de activación y el ID del usuario
-                activation_link = f"{settings.BASEURL}{reverse('activate_user', args=[user_id])}"
-
-                # Mensaje del correo electrónico
-                message = (
-                    f"¡Gracias por registrarte! Para activar tu cuenta, haz clic en el siguiente enlace:\n\n"
-                    f"{activation_link}\n\n"
-                    f"Si el enlace no funciona, cópialo y pégalo en la barra de direcciones de tu navegador."
-                )
-
-                # Enviar el correo electrónico
-                subject = 'Activa tu cuenta'
-                from_email = settings.EMAIL_HOST_USER
-                to_email = new_user.email
-
-                send_mail(subject, message, from_email, [to_email])
+                # Envío de correo electrónico para activación
+                send_activation_email(new_user)
 
                 return render(request, 'register_done.html', {'new_user': new_user})
             else:
@@ -174,46 +149,14 @@ def register(request):
         user_form = UserRegistrationForm()
     return render(request, 'register.html', {'user_form': user_form})
 
-# class RegisterView(APIView):
-#     def get(self, request):
-#         return render(request, 'register.html')
-#     def post(self, request):
-#         key = request.data.get('token', '')
-#         tk = get_object_or_404(Token, key=key)
-#         print('llega')
-#         if not tk.user.is_superuser:
-#             return Response({}, status=HTTP_401_UNAUTHORIZED)
-
-#         username = request.data.get('username', '')
-#         pwd = request.data.get('password', '')
-#         print('llega 2')
-
-#         if not username or not pwd:
-#             return Response({}, status=HTTP_400_BAD_REQUEST)
-
-#         try:
-            
-#             user = User(username=username)
-#             user.set_password(pwd)
-#             user.save()
-#             token, _ = Token.objects.get_or_create(user=user)
-#             print('llega 3')
-
-#         except IntegrityError:
-#             return Response({}, status=HTTP_400_BAD_REQUEST)
-
-#         # Envío de correo electrónico para activación
-#         activation_link = f"{settings.BASEURL}{reverse('activate_user', args=[user.id])}"
-#         message = (
-#             f"¡Gracias por registrarte! Para activar tu cuenta, haz clic en el siguiente enlace:\n\n"
-#             f"{activation_link}\n\n"
-#             f"Si el enlace no funciona, cópialo y pégalo en la barra de direcciones de tu navegador."
-#         )
-#         subject = 'Activa tu cuenta'
-#         from_email = settings.EMAIL_HOST_USER
-#         to_email = user.email
-#         send_mail(subject, message, from_email, [to_email])
-#         print(f"Username: {username}, registro exitoso")
-
-#         #return render(request, 'register_done.html', {'new_user': user.pk, 'token': token.key})
-#         return Response({'user_pk': user.pk, 'token': token.key}, status=HTTP_201_CREATED)
+def send_activation_email(user):
+    activation_link = f"{settings.BASEURL}{reverse('activate_user', args=[user.id])}"
+    message = (
+        f"¡Gracias por registrarte! Para activar tu cuenta, haz clic en el siguiente enlace:\n\n"
+        f"{activation_link}\n\n"
+        f"Si el enlace no funciona, cópialo y pégalo en la barra de direcciones de tu navegador."
+    )
+    subject = 'Activa tu cuenta'
+    from_email = settings.EMAIL_HOST_USER
+    to_email = user.email
+    send_mail(subject, message, from_email, [to_email])

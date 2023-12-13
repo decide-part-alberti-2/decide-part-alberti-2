@@ -1,6 +1,5 @@
 from rest_framework.response import Response
 from rest_framework.status import (
-        HTTP_201_CREATED,
         HTTP_400_BAD_REQUEST,
         HTTP_401_UNAUTHORIZED
 )
@@ -57,7 +56,7 @@ def user_login(request):
                 return JsonResponse({'error': 'Formato JSON inválido'}, status=400)
         else:
             username = request.POST.get('username')
-            password = request.POST.get('password')    
+            password = request.POST.get('password') 
         if username and password:
             user = None
             if '@' in username:
@@ -71,7 +70,7 @@ def user_login(request):
                 auth_user = authenticate(request, username=username, password=password)
                 if auth_user is not None:
                     # Obtiene o crea el token si la autenticación es exitosa
-                    token, created = Token.objects.get_or_create(user=auth_user)
+                    token, _ = Token.objects.get_or_create(user=auth_user)
 
                     # Inicia sesión al usuario autenticado
                     login(request, auth_user)
@@ -131,7 +130,6 @@ def register(request):
             send_activation_email(user)
 
             return JsonResponse({'user_pk': user.pk, 'token': token.key}, status=201)
-    
         else:
             user_form = UserRegistrationForm(request.POST or None)
             if user_form.is_valid():

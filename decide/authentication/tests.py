@@ -97,20 +97,6 @@ class AuthTestCase(APITestCase):
         response = self.client.post('/authentication/login/', data, format='json')
         self.assertEqual(response.status_code, 200)
         token = response.json()
-    def setUp(self):
-        self.client = APIClient()
-        mods.mock_query(self.client)
-        u = User(username='voter1')
-        u.set_password('123')
-        u.save()
-
-        u2 = User(username='admin')
-        u2.set_password('admin')
-        u2.is_superuser = True
-        u2.save()
-
-    def tearDown(self):
-        self.client = None
 
     def test_register_user_already_exist(self):
         data = {'username': 'admin', 'password': 'admin'}

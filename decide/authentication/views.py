@@ -1,8 +1,4 @@
 from rest_framework.response import Response
-from rest_framework.status import (
-        HTTP_400_BAD_REQUEST,
-        HTTP_401_UNAUTHORIZED
-)
 from django.contrib.auth import authenticate, login
 from .forms import LoginForm, UserRegistrationForm
 from django.core.mail import send_mail
@@ -56,7 +52,7 @@ def user_login(request):
                 return JsonResponse({'error': 'Formato JSON inválido'}, status=400)
         else:
             username = request.POST.get('username')
-            password = request.POST.get('password') 
+            password = request.POST.get('password')
         if username and password:
             user = None
             if '@' in username:

@@ -1,5 +1,7 @@
 from django.db.utils import IntegrityError
+from .forms import CensusAddLdapFormVotacion
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import render
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -12,6 +14,8 @@ from rest_framework.status import (
 
 from base.perms import UserIsStaff
 from .models import Census
+from .models import LdapCensus
+
 
 
 class CensusCreate(generics.ListCreateAPIView):
@@ -49,3 +53,51 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         except ObjectDoesNotExist:
             return Response('Invalid voter', status=ST_401)
         return Response('Valid voter')
+
+def import_census_from_ldap_votacion(request):
+    if request.method == 'POST':
+        return handle_post_request(request)
+    else:
+        return handle_get_request(request)
+
+def handle_post_request(request):
+    form = CensusAddLdapFormVotacion(request.POST)
+
+    if form.is_valid():
+        url_ldap = form.cleaned_data['urlLdap']
+        tree_suffix = form.cleaned_data['treeSufix']
+        pwd = form.cleaned_data['pwd']
+        branch = form.cleaned_data['branch']
+        voting = form.cleaned_data['voting'].__getattribute__('pk')
+        username_list = LdapCensus().ldapGroups(url_ldap, tree_suffix, pwd, branch)
+        voters = User.objects.all()
+        user_list = []
+
+        for username in username_list:
+            user = voters.filter(username=username)
+            if user:
+                user = user.values('id')[0]['id']
+                user_list.append(user)
+
+        import_users_to_census(request, voting, user_list)
+
+    return redirect('/admin/census/census')
+
+def import_users_to_census(request, voting, user_list):
+    if request.user.is_authenticated:
+        for username in user_list:
+            census = Census(voting_id=voting, voter_id=username)
+
+            try:
+                census.save()
+            except IntegrityError:
+                messages.add_message(request, messages.ERROR, "Algunos usuarios no se importaron porque ya estaban en la base de datos")
+
+def handle_get_request(request):
+    form = CensusAddLdapFormVotacion()
+    context = {'form': form}
+
+    return render(request, template_name='LDAPvotacion.html', context=context)
+
+
+

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block title %}{% trans 'Import of census by LDAP' %}{% endblock %}
+
+{% block extrahead %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+{% endblock %}
+
+{% block content %}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <h1 class="navbar-brand">Decide</h1>
+    </div>
+  <a class="navbar-brand" href="/admin">{% trans 'Home' %}</a>
+  <a class="navbar-brand" href="{% url 'addLDAPcensusVotacion' %}">{% trans "Import LDAP census" %}</a>
+</nav>
+
+<div class="container mt-3">
+  <h4>{% trans 'Adding voters on a vote' %}</h4>
+
+  <form action="{% url 'addLDAPcensusVotacion' %}" method="POST">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label for="id_voting">{% trans 'Select voting' %}</label>
+      {{ form.voting }}
+    </div>
+
+    <div class="form-group">
+      <label for="id_urlLdap">{% trans "Admin's Url: " %}</label>
+      {{ form.urlLdap }}
+    </div>
+
+    <div class="form-group">
+      <label for="id_treeSufix">{% trans "Domain's Url: " %}</label>
+      {{ form.treeSufix }}
+    </div>
+
+    <div class="form-group">
+      <label for="id_branch">{% trans 'Branch to add: ' %}</label>
+      {{ form.branch }}
+    </div>
+
+    <div class="form-group">
+      <label for="id_pwd">{% trans 'Password: ' %}</label>
+      {{ form.pwd }}
+    </div>
+
+    <button class="btn btn-primary" type="submit">{% trans "Create census" %}</button>
+  </form>
+
+</div>
+
+{% endblock %}

@@ -15,6 +15,7 @@ from .admin import export_to_csv, export_to_pdf, get_related_object, CensusAdmin
 from io import StringIO
 from django.http import HttpResponse
 import csv
+import os
 
 
 class CensusTestCase(BaseTestCase):
@@ -257,7 +258,6 @@ class CensusSeleniumTests(LiveServerTestCase):
 
         # Confirma la acción
         self.driver.find_element(By.NAME,'index').click()
-        self.driver.save_screenshot("capturacsv.png")
         # Verifica que la respuesta sea un archivo CSV
         check=False
         
@@ -299,3 +299,40 @@ class CensusSeleniumTests(LiveServerTestCase):
             check =  True
 
         self.assertTrue(check)
+
+    
+    def test_import_from_csv(self):
+        # Agrega lógica para crear un archivo CSV temporal con datos de prueba
+        csv_data = "voting_id,voter_id\n4,1\n5,1"
+        csv_file_path = os.getcwd()+"test_census_import.csv"
+        with open(csv_file_path, "w") as csv_file:
+            csv_file.write(csv_data)
+
+        try:
+            # Abre la página de administración
+            self.driver.get(self.live_server_url + '/admin/login/?next=/admin/')
+            self.driver.set_window_size(1400, 800)
+
+            # Inicia sesión en el administrador
+            self.driver.find_element(By.ID, 'id_username').click()
+            self.driver.find_element(By.ID, 'id_username').send_keys('admin')
+            self.driver.find_element(By.ID, 'id_password').click()
+            self.driver.find_element(By.ID, 'id_password').send_keys('qwerty')
+            self.driver.find_element(By.CSS_SELECTOR, "input[type='submit']").click()
+
+            # Navega a la sección de censos
+            self.driver.get(self.live_server_url + '/census/import_census/')
+
+            # Carga el archivo CSV en el formulario
+            self.driver.find_element(By.ID, 'file').send_keys(csv_file_path)
+
+            # Envía el formulario de importación
+            submit_button = self.driver.find_element(By.CSS_SELECTOR, 'button[type="submit"]')
+            submit_button.click()
+
+            # Verifica el mensaje de éxito o cualquier otro indicador en la página
+            self.assertEquals(self.driver.find_element(By.TAG_NAME, 'h1').text, "Import Census Result") 
+            
+        finally:
+            # Borra el archivo CSV temporal después del test
+            os.remove(csv_file_path)

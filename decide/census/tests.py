@@ -8,7 +8,6 @@ from .models import Census
 from base import mods
 from django.test import LiveServerTestCase
 from base.tests import BaseTestCase
-from authentication.tests import AuthTestCase
 from datetime import datetime
 from django.contrib import admin
 from .admin import export_to_csv, export_to_pdf, get_related_object, CensusAdmin
@@ -331,8 +330,7 @@ class CensusSeleniumTests(LiveServerTestCase):
             submit_button.click()
 
             # Verifica el mensaje de éxito o cualquier otro indicador en la página
-            self.assertEquals(self.driver.find_element(By.TAG_NAME, 'h1').text, "Import Census Result") 
-            
+            self.assertEquals(self.driver.find_element(By.TAG_NAME, 'h1').text, "Import Census Result")
         finally:
             # Borra el archivo CSV temporal después del test
             os.remove(csv_file_path)

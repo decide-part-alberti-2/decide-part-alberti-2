@@ -53,14 +53,14 @@ def get_related_object(model_name, id_value):
     if model_name == 'User':
         try:
             user= User.objects.get(pk=id_value)
-        except:
+        except Exception:
             user = ''
         return user
     elif model_name == 'Voting':
         try:
             voting = Voting.objects.get(pk=id_value)
-        except:
-            voting = '' 
+        except Exception:
+            voting = ''
         return voting
     else:
         raise ValueError(f"Invalid model name: {model_name}")

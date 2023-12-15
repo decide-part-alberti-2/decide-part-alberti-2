@@ -164,16 +164,14 @@ class AuthTestCase(APITestCase):
         self.assertEqual(sent_email.subject, 'Activa tu cuenta')
         self.assertEqual(sent_email.to, ['testemail@gmail.com'])
 
-        base_url = "http://localhost:8000"  # La URL base de tu proyecto, ajusta según sea necesario
+        base_url = "http://localhost:8000"  
         activation_link = f"{base_url}/authentication/activate/{self.user_testemail.id}/"
 
-        # Extraer el enlace del cuerpo del correo
         email_activation_link = None
         for line in sent_email.body.split('\n'):
             if activation_link in line:
                 email_activation_link = line.strip()
                 break
 
-        # Verificar si se extrajo el enlace y comparar con el enlace generado
         self.assertIsNotNone(email_activation_link)
         self.assertEqual(email_activation_link, activation_link)

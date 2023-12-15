@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 
 from .models import Census
 from base import mods
+from django.test import LiveServerTestCase
 from base.tests import BaseTestCase
 from datetime import datetime
 from django.contrib import admin
@@ -199,3 +200,48 @@ class CensusTest(StaticLiveServerTestCase):
         # Prueba la función get_related_object con datos de prueba
         related_user = get_related_object('User', self.user.pk)
         self.assertEqual(self.user, related_user)
+
+
+class CensusSeleniumTests(LiveServerTestCase):
+    def setUp(self):
+        self.driver = webdriver.Firefox()  # Asegúrate de tener el controlador adecuado instalado
+        super().setUp()
+
+    def tearDown(self):
+        self.driver.quit()
+        super().tearDown()
+
+    def test_export_to_csv(self):
+        # Abre la página de administración
+        self.driver.get(self.live_server_url + '/admin/')
+
+        # Inicia sesión en el administrador
+        self.driver.find_element_by_id('id_username').send_keys('tu_usuario')
+        self.driver.find_element_by_id('id_password').send_keys('tu_contraseña')
+        self.driver.find_element_by_css_selector("input[type='submit']").click()
+
+        # Navega a la sección de censos
+        self.driver.find_element_by_link_text('Censuses').click()
+
+        # Selecciona todos los censos
+        self.driver.find_element_by_id('action-toggle').click()
+
+        # Ejecuta la acción de exportar a CSV
+        self.driver.find_element_by_name('action').click()
+        self.driver.find_element_by_name('action').send_keys('export_to_csv')
+        self.driver.find_element_by_name('index').click()
+
+        # Confirma la acción
+        self.driver.find_element_by_name('index').click()
+
+        # Verifica que la respuesta sea un archivo CSV
+        content_type = self.driver.find_element_by_tag_name('body').get_attribute('content-type')
+        self.assertEqual(content_type, 'text/csv')
+
+    def test_export_to_pdf(self):
+        # Similar al caso anterior, pero ejecutando la acción de exportar a PDF
+        pass
+
+    def test_other_selenium_scenario(self):
+        # Puedes agregar más escenarios de prueba según tus necesidades
+        pass

@@ -37,8 +37,9 @@ def export_to_csv(modeladmin, request, queryset):
                 else:
                     find = 1
                 related_obj = get_related_object(model_name, value)
-                name_field = related_obj._meta.fields[find]
-                value = getattr(related_obj,name_field.name)
+                if related_obj != '':
+                    name_field = related_obj._meta.fields[find]
+                    value = getattr(related_obj,name_field.name)
             if isinstance(value,datetime.datetime):
                 value = value.strftime('%d/%m/%Y')
             data_row.append(value)
@@ -50,9 +51,17 @@ export_to_csv.short_description = 'Export to CSV'
 
 def get_related_object(model_name, id_value):
     if model_name == 'User':
-        return User.objects.get(pk=id_value)
+        try:
+            user= User.objects.get(pk=id_value)
+        except:
+            user = ''
+        return user
     elif model_name == 'Voting':
-        return Voting.objects.get(pk=id_value)
+        try:
+            voting = Voting.objects.get(pk=id_value)
+        except:
+            voting = '' 
+        return voting
     else:
         raise ValueError(f"Invalid model name: {model_name}")
 

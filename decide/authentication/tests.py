@@ -4,6 +4,10 @@ from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from .forms import UserRegistrationForm
 from base import mods
+from .views import send_activation_email
+from django.core import mail
+from django.conf import settings
+from django.urls import reverse
 
 
 class AuthTestCase(APITestCase):
@@ -15,6 +19,10 @@ class AuthTestCase(APITestCase):
         self.user_voter1.set_password('123')
         self.user_voter1.save()
 
+        self.user_testemail = User.objects.create(username='testemail', email='testemail@gmail.com')
+        self.user_testemail.set_password('test123')
+        self.user_testemail.save()
+
         u2 = User(username='admin')
         u2.set_password('admin')
         u2.is_superuser = True
@@ -22,6 +30,7 @@ class AuthTestCase(APITestCase):
 
     def tearDown(self):
         self.client = None
+
 
     def test_login(self):
         data = {'username': 'voter1', 'password': '123'}
@@ -145,3 +154,26 @@ class AuthTestCase(APITestCase):
             self.assertEqual(saved_user.username, 'user45')
             self.assertTrue(saved_user.is_active) 
             self.assertTrue(saved_user.check_password('pwd1'))
+
+
+    def test_send_activation_email(self):
+        send_activation_email(self.user_testemail)
+
+        self.assertEqual(len(mail.outbox), 1)
+        sent_email = mail.outbox[0]
+        self.assertEqual(sent_email.subject, 'Activa tu cuenta')
+        self.assertEqual(sent_email.to, ['testemail@gmail.com'])
+
+        base_url = "http://localhost:8000"  # La URL base de tu proyecto, ajusta según sea necesario
+        activation_link = f"{base_url}/authentication/activate/{self.user_testemail.id}/"
+
+        # Extraer el enlace del cuerpo del correo
+        email_activation_link = None
+        for line in sent_email.body.split('\n'):
+            if activation_link in line:
+                email_activation_link = line.strip()
+                break
+
+        # Verificar si se extrajo el enlace y comparar con el enlace generado
+        self.assertIsNotNone(email_activation_link)
+        self.assertEqual(email_activation_link, activation_link)

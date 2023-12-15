@@ -284,17 +284,12 @@ class CensusSeleniumTests(LiveServerTestCase):
        
         # Selecciona todos los censos
         self.driver.find_element(By.CLASS_NAME,'action-select').click()
-        self.driver.save_screenshot("captura1.png")
         # Ejecuta la acción de exportar a CSV
         self.driver.find_element(By.NAME,'action').click()
-        self.driver.save_screenshot("captura2.png")
         self.driver.find_element(By.NAME,'action').send_keys('export_to_pdf')
-        self.driver.save_screenshot("captura3.png")
         self.driver.find_element(By.NAME,'index').click()
-        self.driver.save_screenshot("captura4.png")
         # Confirma la acción
         self.driver.find_element(By.NAME,'index').click()
-        self.driver.save_screenshot("captura.png")
         
         check=False
         

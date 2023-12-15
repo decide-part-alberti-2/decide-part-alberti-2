@@ -10,16 +10,16 @@
 {% endblock %}
 
 {% block content %}
-    <form action="" method="post">
+    <form action="{% url 'login' %}" method="post">
         <h1>Login</h1>
         <div class="fieldWrapper">
             <label for="id_usuario_email">Nombre de usuario o email:</label>
-            <input type="text" name="usuario_email" class="form-control mb-2" required="" id="id_usuario_email">
+            <input type="text" name="username" class="form-control mb-2" required="" id="id_username">
         </div>
 
         <div class="fieldWrapper">
             <label for="id_password1">Contraseña:</label>
-            <input type="password" name="password1" class="form-control mb-2" required="" id="id_password1">
+            <input type="password" name="password" class="form-control mb-2" required="" id="id_password">
         </div>
         {% csrf_token %}
         <input type="submit" class="btn btn-primary" value="Login">

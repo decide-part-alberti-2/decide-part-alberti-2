@@ -14,3 +14,11 @@ class LoginRegisterLoadTest(HttpUser):
     @task
     def get_admin(self):
         self.client.get("/admin")
+    
+    @task(3)
+    def get_logout(self):
+        self.client.get('/logout')
+
+    @task
+    def get_authentication_register(self):
+        self.client.get('/authentication/register')

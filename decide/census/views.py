@@ -1,7 +1,8 @@
+from pyexpat.errors import messages
 from django.db.utils import IntegrityError
 from .forms import CensusAddLdapFormVotacion
 from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -15,6 +16,7 @@ from rest_framework.status import (
 from base.perms import UserIsStaff
 from .models import Census
 from .models import LdapCensus
+from django.contrib.auth.models import User
 
 
 

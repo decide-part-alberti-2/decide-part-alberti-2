@@ -17,8 +17,7 @@ class Census(models.Model):
         unique_together = (('voting_id', 'voter_id'),)
 
 
-from ldap3 import Server, Connection, ALL_ATTRIBUTES
-import re
+
 
 class LdapCensus:
     def ldapConnection(self, urlServer, auth, psw):

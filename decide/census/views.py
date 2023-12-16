@@ -75,13 +75,13 @@ def handle_post_request(request):
         voters = User.objects.all()
         user_list = []
 
-        for username in username_list:
-            user = voters.filter(username=username)
-            if user:
-                user = user.values('id')[0]['id']
-                user_list.append(user)
+    for username in username_list:
+        user = voters.filter(username=username)
+        if user:
+            user = user.values('id')[0]['id']
+            user_list.append(user)
 
-        import_users_to_census(request, voting, user_list)
+    import_users_to_census(request, voting, user_list)
 
     return redirect('/admin/census/census')
 

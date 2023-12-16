@@ -194,8 +194,8 @@ class CensusTest(StaticLiveServerTestCase):
 
         antes = Census.objects.count()
         #Guardamos al usuario a introducir que ya esta en el ldap
-        u = User(username='curie')
-        u.set_password('123')
+        u = User(username='curi')
+        u.set_password('12')
         u.save()
 
         admin = User(username='administrado')
@@ -240,5 +240,6 @@ class CensusTest(StaticLiveServerTestCase):
         despues = Census.objects.count()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(antes,despues)
+
 
     

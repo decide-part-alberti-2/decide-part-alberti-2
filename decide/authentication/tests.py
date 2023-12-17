@@ -6,9 +6,6 @@ from .forms import UserRegistrationForm
 from base import mods
 from .views import send_activation_email
 from django.core import mail
-from django.conf import settings
-from django.urls import reverse
-
 
 class AuthTestCase(APITestCase):
 
@@ -137,24 +134,22 @@ class AuthTestCase(APITestCase):
         self.assertEqual(cleaned_password, '123')
 
     def test_save_user_active(self):
-            data = {'username': 'admin', 'password': 'admin'}
-            response = self.client.post('/authentication/login/', data, format='json')
-            self.assertEqual(response.status_code, 200)
-            token = response.json()
+        data = {'username': 'admin', 'password': 'admin'}
+        response = self.client.post('/authentication/login/', data, format='json')
+        self.assertEqual(response.status_code, 200)
+        token = response.json()
 
-            token.update({'username': 'user45', 'password': 'pwd1'})
-            response = self.client.post('/authentication/register/', token, format='json')
-            self.assertEqual(response.status_code, 201)
-            self.assertEqual(
-                sorted(list(response.json().keys())),
-                ['token', 'user_pk']
-            )
-            
-            saved_user = User.objects.get(username='user45')
-            self.assertEqual(saved_user.username, 'user45')
-            self.assertTrue(saved_user.is_active) 
-            self.assertTrue(saved_user.check_password('pwd1'))
-
+        token.update({'username': 'user45', 'password': 'pwd1'})
+        response = self.client.post('/authentication/register/', token, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(
+            sorted(list(response.json().keys())),
+            ['token', 'user_pk']
+        )
+        saved_user = User.objects.get(username='user45')
+        self.assertEqual(saved_user.username, 'user45')
+        self.assertTrue(saved_user.is_active)
+        self.assertTrue(saved_user.check_password('pwd1'))
 
     def test_send_activation_email(self):
         send_activation_email(self.user_testemail)
@@ -164,7 +159,7 @@ class AuthTestCase(APITestCase):
         self.assertEqual(sent_email.subject, 'Activa tu cuenta')
         self.assertEqual(sent_email.to, ['testemail@gmail.com'])
 
-        base_url = "http://localhost:8000"  
+        base_url = "http://localhost:8000"
         activation_link = f"{base_url}/authentication/activate/{self.user_testemail.id}/"
 
         email_activation_link = None

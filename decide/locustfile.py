@@ -6,7 +6,7 @@ class LoginRegisterLoadTest(HttpUser):
     @task
     def get_login(self):
         self.client.get("/login-form")
-    
+
     @task
     def get_register(self):
         self.client.get("/register")

@@ -1,5 +1,9 @@
 [![Build Status](https://travis-ci.com/wadobo/decide.svg?branch=master)](https://travis-ci.com/wadobo/decide) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/6a6e89e141b14761a19288a6b28db474)](https://www.codacy.com/gh/decide-update-4-1/decide-update-4.1/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=decide-update-4-1/decide-update-4.1&amp;utm_campaign=Badge_Grade) [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/6a6e89e141b14761a19288a6b28db474)](https://www.codacy.com/gh/decide-update-4-1/decide-update-4.1/dashboard?utm_source=github.com&utm_medium=referral&utm_content=decide-update-4-1/decide-update-4.1&utm_campaign=Badge_Coverage)
 
+Welcome to version v1.0.1 of decide-part-alberti-2!
+
+This version adds to the initial 1.0.0 version a pile of new tests and corrections on the style. Enjoy!
+
 Plataforma voto electrónico educativa
 =====================================
 

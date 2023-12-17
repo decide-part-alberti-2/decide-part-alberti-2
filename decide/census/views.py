@@ -67,7 +67,7 @@ def handle_post_request(request):
 
     if form.is_valid():
         url_ldap = form.cleaned_data['urlLdap']
-        tree_suffix = form.cleaned_data['treeSufix']
+        tree_suffix = form.cleaned_data['treeSuffix']
         pwd = form.cleaned_data['pwd']
         branch = form.cleaned_data['branch']
         voting = form.cleaned_data['voting'].__getattribute__('pk')
@@ -93,7 +93,7 @@ def import_users_to_census(request, voting, user_list):
             try:
                 census.save()
             except IntegrityError:
-                messages.add_message(request, messages.ERROR, "Algunos usuarios no se importaron porque ya estaban en la base de datos")
+                messages.add_message(request, messages.ERROR, "Algunos usuarios no se importaron porque ya estaban inscritos en el censo")
 
 def handle_get_request(request):
     form = CensusAddLdapFormVotacion()

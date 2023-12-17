@@ -14,7 +14,7 @@ class CensusAddLdapFormVotacion(forms.Form):
                                 widget=forms.TextInput(attrs={'placeholder': 'ldap.ServerUrl:Port'}),
                                 required=True)
 
-    treeSufix = forms.CharField(label='Rama del arbol del administrador LDAP',
+    treeSuffix = forms.CharField(label='Rama del arbol del administrador LDAP',
                                 widget=forms.TextInput(attrs={'placeholder': 'cn=admin,dc=YourDomain,dc=com'}),
                                 required=True)
 

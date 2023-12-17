@@ -36,7 +36,7 @@ class LogoutView(APIView):
             tk = Token.objects.get(key=key)
             tk.delete()
         except ObjectDoesNotExist:
-            print("El token no existee")
+            print("El token no existe")
 
         logout(request)
         return Response({})
@@ -86,28 +86,6 @@ def user_login(request):
                 return JsonResponse({'message': 'Cuenta desactivada o credenciales inválidas'})
 
     return JsonResponse({'error': 'Solicitud incorrecta'}, status=400)
-
-# def user_logout(request):
-#     if request.method == 'POST':  # Verificar si la solicitud es POST
-#         if request.content_type == 'application/json':
-#             try:
-#                 data = json.loads(request.body)
-#                 key = data.get('token')
-#             except json.JSONDecodeError:
-#                 return JsonResponse({'error': 'Formato JSON inválido'}, status=400)
-#         else:
-#             key = request.POST.get('token')
-#         print(key)
-#         print("llega key")
-#         print(request)
-#         try:
-#             tk = Token.objects.get(key=key)
-#             tk.delete()
-#             return JsonResponse({}, status=200)
-#         except ObjectDoesNotExist:
-#             return JsonResponse({'error': 'El token no existe'}, status=404)
-#     else:
-#         return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 def user_logout_form(request):
     return render(request, 'logout.html')

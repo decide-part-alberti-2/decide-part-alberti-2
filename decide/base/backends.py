@@ -1,7 +1,8 @@
 from django.contrib.auth.backends import ModelBackend
-
+from django.contrib.auth import get_user_model
 from base import mods
 
+UserModel = get_user_model()
 
 class AuthBackend(ModelBackend):
     '''
@@ -14,16 +15,19 @@ class AuthBackend(ModelBackend):
     '''
 
     def authenticate(self, request, username=None, password=None, **kwargs):
-        u = super().authenticate(request, username=username,
-                                 password=password, **kwargs)
+        # Verifica si username es un correo electrónico
+        if '@' in username:
+            try:
+                user = UserModel.objects.get(email=username)
+            except UserModel.DoesNotExist:
+                return None
+        else:
+            # Si username no es un correo electrónico, usa el nombre de usuario
+            user = super().authenticate(request, username=username, password=password, **kwargs)
 
-        # only doing this for the admin web interface
-        if u and request.content_type == 'application/x-www-form-urlencoded':
-            data = {
-                'username': username,
-                'password': password,
-            }
-            token = mods.post('authentication', entry_point='/login/', json=data)
-            request.session['auth-token'] = token['token']
-
-        return u
+        # Verifica la contraseña si se encontró un usuario
+        if user and user.check_password(password):
+            return user
+        else:
+            return None
+    

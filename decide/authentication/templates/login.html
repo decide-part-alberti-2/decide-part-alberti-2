@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+    <link type="text/css" rel="stylesheet"
+         href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet"
+         href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css" />
+    <style>
+        form {
+            max-width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .fieldWrapper {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            padding: 10px 20px;
+            border-radius: 4px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <form action="{% url 'login' %}" method="post">
+        <h1>Login</h1>
+        <div class="fieldWrapper">
+            <label for="id_usuario_email">Nombre de usuario o email:</label>
+            <input type="text" name="username" class="form-control mb-2" required="" id="id_username">
+        </div>
+
+        <div class="fieldWrapper">
+            <label for="id_password1">Contraseña:</label>
+            <input type="password" name="password" class="form-control mb-2" required="" id="id_password">
+        </div>
+        {% csrf_token %}
+        <input type="submit" class="btn btn-primary" value="Login">
+    </form>
+{% endblock %}

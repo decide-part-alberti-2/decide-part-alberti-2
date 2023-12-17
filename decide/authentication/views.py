@@ -1,13 +1,12 @@
 from rest_framework.response import Response
 from django.contrib.auth import authenticate, login
-from .forms import LoginForm, UserRegistrationForm
+from .forms import UserRegistrationForm
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.authtoken.models import Token
 from django.http import JsonResponse

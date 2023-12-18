@@ -380,7 +380,8 @@ class CensusSeleniumTests(LiveServerTestCase):
 
         self.client.force_login(u)
         votacion = Voting.objects.all().filter(end_date__isnull=True)[0].id
-        data = {'voting': votacion, 'urlLdap': 'ldap.forumsys.com:389', 'branch': 'ou=mathematicians,dc=example,dc=com', 'treeSuffix': 'cn=read-only-admin,dc=example,dc=com','pwd': 'password'}
+        data = {'voting': votacion, 'urlLdap': 'ldap.forumsys.com:389', 'branch': 'ou=mathematicians,dc=example,dc=com',
+                'treeSuffix': 'cn=read-only-admin,dc=example,dc=com','pwd': 'password'}
         response = self.client.post('/census/addLDAPcensusVotacion/', data)
         despues = Census.objects.count()
         self.assertEqual(response.status_code, 302)

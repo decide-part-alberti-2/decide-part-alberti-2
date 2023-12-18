@@ -369,14 +369,15 @@ class CensusSeleniumTests(LiveServerTestCase):
             self.driver.find_element(By.CLASS_NAME,'warning')
         except NoSuchElementException:
             check =  True
-
+            csv_file_path = os.getcwd()+"/census.csv"
+            os.remove(csv_file_path)
         self.assertTrue(check)
 
     
     def test_import_from_csv(self):
         # Agrega lógica para crear un archivo CSV temporal con datos de prueba
         csv_data = "voting_id,voter_id\n4,1\n5,1"
-        csv_file_path = os.getcwd()+"test_census_import.csv"
+        csv_file_path = os.getcwd()+"/test_census_import.csv"
         with open(csv_file_path, "w") as csv_file:
             csv_file.write(csv_data)
 

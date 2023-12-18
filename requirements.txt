@@ -14,3 +14,5 @@ pynose==1.4.8
 reportlab==3.6.1
 pandas==2.0.3
 python-dotenv==1.0.0
+ldap3==2.9.1
+git-fame

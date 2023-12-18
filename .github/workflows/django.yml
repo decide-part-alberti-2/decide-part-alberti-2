@@ -38,7 +38,7 @@ jobs:
       with:
         python-version: ${{matrix.pyversion}} 
     - name: Set up environment variables
-      run: echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> $GITHUB_ENV
+      run: echo "SECRET_KEY=${{ secrets.SECRET_KEY }}"
     - name: psycopg2 prerequisites
       run: sudo apt-get install libpq-dev
     - name: Install dependencies and config

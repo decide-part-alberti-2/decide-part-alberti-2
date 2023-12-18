@@ -9,7 +9,8 @@ on:
     secrets:
       CODACY_PROJECT_TOKEN:
         required: true
-        
+      SECRET_KEY:
+        required: true
 jobs:
   build:
     strategy:
@@ -35,7 +36,9 @@ jobs:
     - name: Set up Python ${{matrix.pyversion}}
       uses: actions/setup-python@v4
       with:
-        python-version: ${{matrix.pyversion}}
+        python-version: ${{matrix.pyversion}} 
+    - name: Set up environment variables
+      run: echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> $GITHUB_ENV
     - name: psycopg2 prerequisites
       run: sudo apt-get install libpq-dev
     - name: Install dependencies and config

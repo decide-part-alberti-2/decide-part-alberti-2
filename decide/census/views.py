@@ -86,8 +86,8 @@ def handle_post_request(request):
     form = CensusAddLdapFormVotacion(request.POST)
 
     if form.is_valid():
-        url_ldap = form.cleaned_data['urlLdap']
-        tree_suffix = form.cleaned_data['treeSuffix']
+        url_ldap = form.cleaned_data['url_ldap']
+        tree_suffix = form.cleaned_data['tree_suffix']
         pwd = form.cleaned_data['pwd']
         branch = form.cleaned_data['branch']
         voting = form.cleaned_data['voting'].__getattribute__('pk')

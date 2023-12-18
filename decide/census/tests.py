@@ -169,6 +169,78 @@ class CensusTest(StaticLiveServerTestCase):
 
         self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
         self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/census/census/add")
+    
+    def test_ldap_check_votacion_pass(self):
+
+        antes = Census.objects.count()
+        u = User(username='gauss')
+        u.set_password('123')
+        u.save()
+
+        admin = User(username='administrador')
+        admin.set_password('1234567asd')
+        admin.is_staff = True
+        admin.save()
+
+        q = Question(desc='test question')
+        q.save()
+        v = Voting(name='titulo 1', desc='Descripcion1',question=q)
+        v.save()
+
+
+        self.client.force_login(admin)
+        votacion = Voting.objects.all().filter(end_date__isnull=True)[0].id
+        data = {'voting': votacion, 'url_ldap': 'ldap.forumsys.com:389', 'branch': 'ou=mathematicians,dc=example,dc=com',
+                'tree_suffix': 'cn=read-only-admin,dc=example,dc=com','pwd': 'password'}
+        response = self.client.post('/census/addLDAPcensusVotacion/', data)
+        despues = Census.objects.count()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(antes+1,despues)
+
+
+    def test_ldap_check_votacion_wrong_login(self):
+
+        antes = Census.objects.count()
+        u = User(username='manolito')
+        u.set_password('123')
+        u.save()
+
+
+        q = Question(desc='test question')
+        q.save()
+        v = Voting(name='titulo 1', desc='Descripcion1',question=q)
+        v.save()
+
+
+        self.client.force_login(u)
+        votacion = Voting.objects.all().filter(end_date__isnull=True)[0].id
+        data = {'voting': votacion, 'url_ldap': 'ldap.forumsys.com:389', 'branch': 'ou=mathematicians,dc=example,dc=com',
+                'tree_suffix': 'cn=read-only-admin,dc=example,dc=com','pwd': 'password'}
+        response = self.client.post('/census/addLDAPcensusVotacion/', data)
+        despues = Census.objects.count()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(antes,despues)
+    
+
+    def test_ldap_check_votacion_get(self):
+
+        antes = Census.objects.count()
+        u = User(username='einstein')
+        u.set_password('123')
+        u.save()
+
+
+        admin = User(username='administrado')
+        admin.set_password('1234567asd')
+        admin.is_staff = True
+        admin.save()
+
+        #Hacemos la request
+        self.client.force_login(admin)
+        response = self.client.get('/census/addLDAPcensusVotacion/')
+        despues = Census.objects.count()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(antes,despues)
 
     def test_export_to_csv(self):
         # Crea un queryset con los datos de prueba
@@ -335,78 +407,7 @@ class CensusSeleniumTests(LiveServerTestCase):
         finally:
             # Borra el archivo CSV temporal después del test
             os.remove(csv_file_path)
-            
-    def test_ldap_check_votacion_pass(self):
-
-        antes = Census.objects.count()
-        u = User(username='gauss')
-        u.set_password('123')
-        u.save()
-
-        admin = User(username='administrador')
-        admin.set_password('1234567asd')
-        admin.is_staff = True
-        admin.save()
-
-        q = Question(desc='test question')
-        q.save()
-        v = Voting(name='titulo 1', desc='Descripcion1',question=q)
-        v.save()
-
-
-        self.client.force_login(admin)
-        votacion = Voting.objects.all().filter(end_date__isnull=True)[0].id
-        data = {'voting': votacion, 'urlLdap': 'ldap.forumsys.com:389', 'branch': 'ou=mathematicians,dc=example,dc=com',
-                'treeSuffix': 'cn=read-only-admin,dc=example,dc=com','pwd': 'password'}
-        response = self.client.post('/census/addLDAPcensusVotacion/', data)
-        despues = Census.objects.count()
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(antes+1,despues)
-
-
-    def test_ldap_check_votacion_wrong_login(self):
-
-        antes = Census.objects.count()
-        u = User(username='manolito')
-        u.set_password('123')
-        u.save()
-
-
-        q = Question(desc='test question')
-        q.save()
-        v = Voting(name='titulo 1', desc='Descripcion1',question=q)
-        v.save()
-
-
-        self.client.force_login(u)
-        votacion = Voting.objects.all().filter(end_date__isnull=True)[0].id
-        data = {'voting': votacion, 'urlLdap': 'ldap.forumsys.com:389', 'branch': 'ou=mathematicians,dc=example,dc=com',
-                'treeSuffix': 'cn=read-only-admin,dc=example,dc=com','pwd': 'password'}
-        response = self.client.post('/census/addLDAPcensusVotacion/', data)
-        despues = Census.objects.count()
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(antes,despues)
     
-
-    def test_ldap_check_votacion_get(self):
-
-        antes = Census.objects.count()
-        u = User(username='einstein')
-        u.set_password('123')
-        u.save()
-
-
-        admin = User(username='administrado')
-        admin.set_password('1234567asd')
-        admin.is_staff = True
-        admin.save()
-
-        #Hacemos la request
-        self.client.force_login(admin)
-        response = self.client.get('/census/addLDAPcensusVotacion/')
-        despues = Census.objects.count()
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(antes,despues)
 
 
     

@@ -8,7 +8,6 @@ class Census(models.Model):
 
 
     def get_all_objects(self):
-
         queryset = self._meta.model.objects.all() 
         return queryset
 
@@ -27,8 +26,7 @@ class LdapCensus:
         Args:
             urlServer: server URL containing the port in use.
             auth: the account of the user to log in for simple bind.
-            psw: the password of the user.
-        """ 
+            psw: the password of the user.""" 
         server = Server(urlServer)
         conn = Connection(server, auth, psw, auto_bind=True)
         return conn
@@ -50,6 +48,5 @@ class LdapCensus:
             text = str(entries)
             group = re.findall('uid=(.+?),', text, re.DOTALL)
             for element in group:
-                if group and ldapList.count(element) == 0:            
-                    ldapList.append(element)
+                if group and ldapList.count(element) == 0:ldapList.append(element)
         return ldapList

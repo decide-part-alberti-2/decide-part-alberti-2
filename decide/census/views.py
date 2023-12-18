@@ -15,7 +15,6 @@ from rest_framework.status import (
 
 from base.perms import UserIsStaff
 from .models import Census
-from django.shortcuts import render
 from .admin import get_related_object, CensusAdmin
 from django.contrib import admin
 from .models import LdapCensus

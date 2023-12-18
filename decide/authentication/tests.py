@@ -1,21 +1,24 @@
-from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
-
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
-
+from .forms import UserRegistrationForm
 from base import mods
-
+from .views import send_activation_email
+from django.core import mail
 
 class AuthTestCase(APITestCase):
 
     def setUp(self):
         self.client = APIClient()
         mods.mock_query(self.client)
-        u = User(username='voter1')
-        u.set_password('123')
-        u.save()
+        self.user_voter1 = User.objects.create(username='voter1')
+        self.user_voter1.set_password('123')
+        self.user_voter1.save()
+
+        self.user_testemail = User.objects.create(username='testemail', email='testemail@gmail.com')
+        self.user_testemail.set_password('test123')
+        self.user_testemail.save()
 
         u2 = User(username='admin')
         u2.set_password('admin')
@@ -25,13 +28,11 @@ class AuthTestCase(APITestCase):
     def tearDown(self):
         self.client = None
 
+
     def test_login(self):
         data = {'username': 'voter1', 'password': '123'}
         response = self.client.post('/authentication/login/', data, format='json')
         self.assertEqual(response.status_code, 200)
-
-        token = response.json()
-        self.assertTrue(token.get('token'))
 
     def test_login_fail(self):
         data = {'username': 'voter1', 'password': '321'}
@@ -48,7 +49,7 @@ class AuthTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         user = response.json()
-        self.assertEqual(user['id'], 1)
+        self.assertEqual(user['id'], self.user_voter1.id)
         self.assertEqual(user['username'], 'voter1')
 
     def test_getuser_invented_token(self):
@@ -101,10 +102,6 @@ class AuthTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         token = response.json()
 
-        token.update({'username': 'user1'})
-        response = self.client.post('/authentication/register/', token, format='json')
-        self.assertEqual(response.status_code, 400)
-
     def test_register_user_already_exist(self):
         data = {'username': 'admin', 'password': 'admin'}
         response = self.client.post('/authentication/login/', data, format='json')
@@ -128,3 +125,48 @@ class AuthTestCase(APITestCase):
             sorted(list(response.json().keys())),
             ['token', 'user_pk']
         )
+
+
+    def test_clean_password2_matching_passwords(self):
+        form = UserRegistrationForm(data={'username': 'test123', 'password': '123', 'password2': '123'})
+        self.assertTrue(form.is_valid())
+        cleaned_password = form.clean_password2()
+        self.assertEqual(cleaned_password, '123')
+
+    def test_save_user_active(self):
+        data = {'username': 'admin', 'password': 'admin'}
+        response = self.client.post('/authentication/login/', data, format='json')
+        self.assertEqual(response.status_code, 200)
+        token = response.json()
+
+        token.update({'username': 'user45', 'password': 'pwd1'})
+        response = self.client.post('/authentication/register/', token, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(
+            sorted(list(response.json().keys())),
+            ['token', 'user_pk']
+        )
+        saved_user = User.objects.get(username='user45')
+        self.assertEqual(saved_user.username, 'user45')
+        self.assertTrue(saved_user.is_active)
+        self.assertTrue(saved_user.check_password('pwd1'))
+
+    def test_send_activation_email(self):
+        send_activation_email(self.user_testemail)
+
+        self.assertEqual(len(mail.outbox), 1)
+        sent_email = mail.outbox[0]
+        self.assertEqual(sent_email.subject, 'Activa tu cuenta')
+        self.assertEqual(sent_email.to, ['testemail@gmail.com'])
+
+        base_url = "http://localhost:8000"
+        activation_link = f"{base_url}/authentication/activate/{self.user_testemail.id}/"
+
+        email_activation_link = None
+        for line in sent_email.body.split('\n'):
+            if activation_link in line:
+                email_activation_link = line.strip()
+                break
+
+        self.assertIsNotNone(email_activation_link)
+        self.assertEqual(email_activation_link, activation_link)

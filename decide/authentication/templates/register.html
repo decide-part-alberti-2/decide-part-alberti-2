@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+    <link type="text/css" rel="stylesheet"
+         href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet"
+         href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css" />
+    <style>
+        .fieldWrapper {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            padding: 10px 20px;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+    <form action="{% url 'register' %}" method="post">
+        {% csrf_token %}
+        <h1>Registro de Usuario</h1>
+        <div class="fieldWrapper">
+            <label for="id_username">Nombre de usuario:</label>
+            <input type="text" name="username" class="form-control mb-2" required="" id="id_username">
+        </div>
+
+        <div class="fieldWrapper">
+            <label for="id_password1">Contraseña:</label>
+            <input type="password" name="password" class="form-control mb-2" required="" id="id_password">
+        </div>
+
+        <div class="fieldWrapper">
+            <label for="id_password2">Repetir contraseña:</label>
+            <input type="password" name="password2" class="form-control mb-2" id="id_password2">
+        </div>
+
+        <div class="fieldWrapper">
+            <label for="id_email">Correo electrónico:</label>
+            <input type="email" name="email" class="form-control mb-2" id="id_email">
+        </div>
+
+        <div class="fieldWrapper">
+            <label for="id_first_name">Nombre:</label>
+            <input type="text" name="first_name" class="form-control mb-2" id="id_first_name">
+        </div>
+
+        <div class="fieldWrapper">
+            <label for="id_last_name">Apellido:</label>
+            <input type="text" name="last_name" class="form-control mb-2" id="id_last_name">
+        </div>
+
+        <input type="submit" class="btn btn-primary" value="Registrarse">
+    </form>
+{% endblock %}
+

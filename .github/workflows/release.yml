@@ -4,7 +4,14 @@ on:
   push: 
     tags:
       - '*'
-
+  workflow_call:
+    secrets:
+      CODACY_PROJECT_TOKEN:
+        required: true
+      SECRET_KEY:
+        required: true
+      DEBUG:
+        required: true
 permissions:
   contents: write
 

@@ -13,6 +13,8 @@ jobs:
     uses: decide-part-alberti-2/decide-part-alberti-2/.github/workflows/django.yml@master
     secrets: 
       CODACY_PROJECT_TOKEN: ${{secrets.CODACY_PROJECT_TOKEN}}
+      SECRET_KEY: ${{secrets.SECRET_KEY}}
+      DEBUG: ${{secrets.DEBUG}}
      
   release:
     needs: buildTest

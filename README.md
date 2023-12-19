@@ -3,7 +3,9 @@
 Welcome to version v1.0.2 of decide-part-alberti-2!
 
 v1.0.1: This version adds to the initial 1.0.0 version a pile of new tests and corrections on the style.
-v1.0.2: Solves import issues on Codacy . Enjoy!
+v1.0.2: Solves import issues on Codacy.
+v1.1.0: This version adds a new feature: LDAP import. It also improves the code refactoring it to solve 
+issues on Codacy. In addition, it has new tests and the possibility to deploy on Render. Enjoy!
 
 Plataforma voto electrónico educativa
 =====================================

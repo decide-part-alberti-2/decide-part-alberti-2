@@ -13,6 +13,7 @@ from django.http import JsonResponse
 from .serializers import UserSerializer
 from django.db import IntegrityError
 import json
+from django.contrib.auth import logout
 
 class GetUserView(APIView):
     def post(self, request):
@@ -37,6 +38,7 @@ class LogoutView(APIView):
         except ObjectDoesNotExist:
             print("El token no existe")
 
+        logout(request)
         return Response({})
 
 def user_login(request):
@@ -56,13 +58,21 @@ def user_login(request):
             user = None
             if '@' in username:
                 # Si es un correo electrónico, busca por email
-                user = User.objects.filter(email=username).first()
+                users = User.objects.filter(email=username)
             else:
                 # Si no es un correo, busca por nombre de usuario
-                user = User.objects.filter(username=username).first()
+                users = User.objects.filter(username=username)
+
+            if users.exists():
+                # Manejar el caso de múltiples usuarios encontrados
+                if users.count() == 1:
+                    user = users.first()
+                else:
+                    return JsonResponse({'error': 'Múltiples usuarios encontrados, intenta con otro nombre o correo'}, status=400)
+
             if user is not None:
                 # Realiza la autenticación del usuario
-                auth_user = authenticate(request, username=username, password=password)
+                auth_user = authenticate(request, username=user.username, password=password)
                 if auth_user is not None:
                     # Obtiene o crea el token si la autenticación es exitosa
                     token, _ = Token.objects.get_or_create(user=auth_user)
@@ -77,6 +87,8 @@ def user_login(request):
 
     return JsonResponse({'error': 'Solicitud incorrecta'}, status=400)
 
+def user_logout_form(request):
+    return render(request, 'logout.html')
 
 def login_form(request):
     return render(request, 'login.html')

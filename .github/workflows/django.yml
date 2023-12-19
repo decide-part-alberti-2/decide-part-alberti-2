@@ -9,7 +9,7 @@ on:
     secrets:
       CODACY_PROJECT_TOKEN:
         required: true
-      DECIDE_ALBERTI2_SECRET_KEY:
+      SECRET_KEY:
         required: true
         
 jobs:
@@ -39,7 +39,7 @@ jobs:
       with:
         python-version: ${{matrix.pyversion}}
     - name: Set up environment variables
-      run: echo "SECRET_KEY=${{ secrets.DECIDE_ALBERTI2_SECRET_KEY }}"
+      run: echo "SECRET_KEY=${{ secrets.SECRET_KEY }}"
     - name: psycopg2 prerequisites
       run: sudo apt-get install libpq-dev
     - name: Install dependencies and config

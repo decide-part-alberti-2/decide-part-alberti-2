@@ -15,11 +15,6 @@ RUN pip install -r requirements.txt
 
 WORKDIR /app/decide
 
-COPY .env /app/.env
-
-ENV SECRET_KEY="^##ydkswfu0+=ofw0l#$kv^8n)0$i(qd&d&ol#p9!b$8*5%j1+" \
-    EMAIL_HOST_PASSWORD="decidepass123"
-
 # local settings.py
 ADD docker-settings.py /app/decide/local_settings.py
 

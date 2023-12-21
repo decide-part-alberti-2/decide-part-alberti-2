@@ -46,7 +46,7 @@ jobs:
     - name: Set up environment variables
       run: |
         echo "SECRET_KEY=${SECRET_KEY}"
-        echo "DEBUG=${DEBUG}"
+        echo "DEBUG=${DEBUG}" 
     - name: psycopg2 prerequisites
       run: sudo apt-get install libpq-dev
     - name: Install dependencies and config

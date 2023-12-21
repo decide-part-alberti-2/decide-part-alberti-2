@@ -57,7 +57,7 @@
 {% block content %}
     <form action="{% url 'register' %}" method="post">
         {% csrf_token %}
-        <h1>Registro de Usuario</h1>
+        <h1>Registro</h1>
         <div class="fieldWrapper">
             <label for="id_username">Nombre de usuario:</label>
             <input type="text" name="username" class="form-control mb-2" required="" id="id_username">

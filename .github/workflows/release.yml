@@ -4,7 +4,14 @@ on:
   push: 
     tags:
       - '*'
-
+  workflow_call:
+    secrets:
+      CODACY_PROJECT_TOKEN:
+        required: true
+      SECRET_KEY:
+        required: true
+      DEBUG:
+        required: true
 permissions:
   contents: write
 
@@ -20,6 +27,10 @@ jobs:
     needs: buildTest
     runs-on: ubuntu-latest
     steps:
+      - name: Set up environment variables
+        run: |
+          echo SECRET_KEY="${{ secrets.SECRET_KEY }}"
+          echo DEBUG="${{ secrets.DEBUG }}"
       - name: Checkout
         uses: actions/checkout@v3
       - name: Release
